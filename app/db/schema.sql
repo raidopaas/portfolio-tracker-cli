@@ -4,7 +4,7 @@ USE portfolio_tracker;
 
 CREATE TABLE accounts (
 	id INT AUTO_INCREMENT PRIMARY KEY,
-    account_name VARCHAR(15),
+    account_name VARCHAR(20),
     account_type ENUM("cash", "broker") NOT NULL,
     balance DECIMAL(10,2) DEFAULT 0.00,
     stock_value DECIMAL(10,2) DEFAULT 0.00,
@@ -46,5 +46,7 @@ CREATE TABLE goals (
     period ENUM("total", "annual") NOT NULL,
     account_id INT NULL,
 
+    CONSTRAINT fk_goals_account
     FOREIGN KEY (account_id) REFERENCES accounts(id)
+    ON DELETE CASCADE
 );
