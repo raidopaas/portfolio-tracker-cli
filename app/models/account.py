@@ -1,5 +1,6 @@
 from decimal import Decimal
 import utils.formatting as formatting
+import utils.constants as constants
 
 class Account:
     def __init__(self, id, name, account_type, balance, currency, stock_value=Decimal("0.00")):
@@ -14,8 +15,7 @@ class Account:
         return self.balance + self.stock_value
 
     def __str__(self):
-        symbols = {"USD": "$", "EUR": "€"}
-        currency = symbols.get(self.currency, self.currency)
+        currency = constants.CURRENCIES[self.listed]
         if self.account_type == 'broker':
             amount = self.total_value()
             details = (
@@ -32,6 +32,7 @@ class Account:
 
     @classmethod
     def from_row(cls, row):
+        # Converts a database row (tuple) into an Account object
         return cls(
             id = row[0],
             name = row[1],

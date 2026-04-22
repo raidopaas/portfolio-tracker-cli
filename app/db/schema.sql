@@ -24,17 +24,14 @@ CREATE TABLE transactions (
 );
 
 CREATE TABLE stocks (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-    symbol VARCHAR(10) NOT NULL,
+    symbol VARCHAR(10) PRIMARY KEY,
     quantity INT NOT NULL DEFAULT 0,
     stock_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total_value DECIMAL(10,2)
 		GENERATED ALWAYS AS (quantity * stock_price) STORED,
 	dividend DECIMAL(4,2) NOT NULL DEFAULT 0.00,
     dividend_date DATE,
-    listed CHAR(3) NOT NULL DEFAULT 'US',
-    
-    UNIQUE KEY unique_stock(symbol, listed)
+    listed CHAR(3) NOT NULL DEFAULT 'US'
 );
 
 CREATE TABLE goals (
