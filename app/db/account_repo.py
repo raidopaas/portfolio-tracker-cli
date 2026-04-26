@@ -18,3 +18,10 @@ def add_account(conn, account):
         cursor.execute(query, values)
     finally:
         cursor.close()
+
+def delete_accounts_table(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM accounts")
+    finally:
+        cursor.close()

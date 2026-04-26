@@ -1,6 +1,6 @@
 import ui.account_ui as account_ui
 #import ui.stock_ui as stock_ui
-#import services.system_service as system_service
+import services.system_service as system_service
 #import ui.account_ui as account_ui
 #import ui.transaction_ui as transaction_ui
 #import ui.stock_ui as stock_ui
@@ -48,7 +48,7 @@ def main_menu_loop(conn):
                     continue
             case "7":
                 console.clear_screen()
-                #reset_data_ui(conn)
+                reset_data_ui(conn)
             case "0":
                 console.clear_screen()
                 print("Good-Bye")
@@ -57,3 +57,17 @@ def main_menu_loop(conn):
                 console.clear_screen()
                 print("Incorrect input. Please enter a number between 0 and 7.")
                 continue
+
+def reset_data_ui(conn):
+    confirm = input("Are you sure you want to reset (y/n): ").lower()
+    if confirm == "y":
+        try:
+            system_service.reset(conn)
+            console.clear_screen()
+            print("Reset successful.")
+        except Exception as e:
+            console.clear_screen()
+            print(e)
+    else:
+        console.clear_screen()
+        return

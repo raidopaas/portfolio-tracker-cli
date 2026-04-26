@@ -14,7 +14,7 @@ def add_account_ui(conn):
 
     console.clear_screen()
 
-    name = input("Enter new account's name: ")
+    name = input("Enter new account's name: ").capitalize()
 
     print("Select new account's type.")
     type_input = "Enter '1' for cash account or enter '2' for broker account: "
