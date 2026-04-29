@@ -23,13 +23,19 @@ def add_account(conn, name, account_type, currency):
         raise RuntimeError(f"Adding account {name} failed.") from e
     
 def validate_account(conn, account):
-    currency = account.currency
-    name = account.name
 
-    if account_repo.account_exists(conn, name):
-        raise ValueError(f"Account with name {name} already exists.")
+    if account_repo.account_exists(conn, account.name, account.currency):
+        raise ValueError(f"Account with name {account.name} already exists.")
 
     if account.account_type == "broker":
-        broker_accounts = account_repo.count_broker_accounts(conn, currency)
+        broker_accounts = account_repo.count_broker_accounts(conn, account.currency)
         if broker_accounts > 0:
-            raise ValueError(f"Broker account with currency {currency} already exists.")
+            raise ValueError(f"Broker account with currency {account.currency} already exists.")
+        
+def get_broker_account(conn, currency):
+    row = account_repo.get_broker_account(conn, currency)
+
+    if not row:
+        raise ValueError(f"No broker account for {currency}.")
+    
+    return Account.from_row(row)
