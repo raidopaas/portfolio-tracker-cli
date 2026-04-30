@@ -1,6 +1,8 @@
 import utils.console as console
 from decimal import Decimal
 import services.stock_service as stock_service
+import services.account_service as account_service
+import ui.helpers as helpers
 
 def add_transaction_menu_loop(conn):
     console.clear_screen()
@@ -14,7 +16,8 @@ def add_transaction_menu_loop(conn):
         response = input("Select your transaction: ")
         match response:
             case "1":
-                pass
+                console.clear_screen()
+                deposit_ui(conn)
             case "2":
                 pass
             case "3":
@@ -31,6 +34,38 @@ def add_transaction_menu_loop(conn):
                 console.clear_screen()
                 print("Incorrect input. Please enter a number between 0 and 5.")
                 continue
+
+def deposit_ui(conn):
+    accounts = account_service.get_accounts(conn)
+    
+    if not accounts:
+        print("No accounts available.")
+        return
+    
+    helpers.print_account_list(accounts)
+    
+    try:
+        id_input = int(input("Enter account id to deposit: "))
+        if id_input < 1 or id_input > len(accounts):
+            console.clear_screen()
+            print("Invalid account id. Transaction cancelled.")
+            return
+        
+        account = accounts[id_input - 1]
+        amount = Decimal(input(f"Enter deposit amount ({account.currency}): "))
+        description = input("Enter description: ")
+    except Exception:
+        console.clear_screen()
+        print("Invalid input. Transaction cancelled.")
+        return
+    
+    try:
+        account_service.deposit(conn, account.id, amount, description)
+        console.clear_screen()
+        print(f"Deposit successful, {amount} {account.currency} deposited to account {account.name}.")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
 
 def buy_stock_ui(conn):
     market = input("Enter stock market from where to buy (US/EU): ").upper()

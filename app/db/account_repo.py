@@ -43,11 +43,40 @@ def count_broker_accounts(conn, currency):
     finally:
         cursor.close()
 
+def get_all_accounts(conn):
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT * FROM accounts ORDER BY account_type ASC, currency ASC, account_name ASC")
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+
+def get_account(conn, account_id):
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT * FROM accounts WHERE id = %s", (account_id,))
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+
 def get_broker_account(conn, currency):
     cursor = conn.cursor()
 
     try:
         cursor.execute("SELECT * FROM accounts WHERE account_type = 'broker' AND currency = %s", (currency,))
         return cursor.fetchone()
+    finally:
+        cursor.close()
+
+def change_balance(conn, account_id, amount):
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE accounts SET balance = balance + %s WHERE id = %s", (amount, account_id))
+
+        if cursor.rowcount == 0:
+            raise ValueError("Account not found.")
     finally:
         cursor.close()
