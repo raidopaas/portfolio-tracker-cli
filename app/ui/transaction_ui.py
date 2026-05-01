@@ -36,25 +36,16 @@ def add_transaction_menu_loop(conn):
                 continue
 
 def deposit_ui(conn):
-    accounts = account_service.get_accounts(conn)
-    
-    if not accounts:
-        print("No accounts available.")
-        return
-    
-    helpers.print_account_list(accounts)
-    
     try:
-        id_input = int(input("Enter account id to deposit: "))
-        if id_input < 1 or id_input > len(accounts):
-            console.clear_screen()
-            print("Invalid account id. Transaction cancelled.")
-            return
-        
-        account = accounts[id_input - 1]
+        account = helpers.select_account(conn, transaction="deposit")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+    try:
         amount = Decimal(input(f"Enter deposit amount ({account.currency}): "))
         description = input("Enter description: ")
-    except Exception:
+    except Exception as e:
         console.clear_screen()
         print("Invalid input. Transaction cancelled.")
         return
