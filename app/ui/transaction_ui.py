@@ -19,7 +19,8 @@ def add_transaction_menu_loop(conn):
                 console.clear_screen()
                 deposit_ui(conn)
             case "2":
-                pass
+                console.clear_screen()
+                withdraw_ui(conn)
             case "3":
                 console.clear_screen()
                 buy_stock_ui(conn)
@@ -45,15 +46,40 @@ def deposit_ui(conn):
     try:
         amount = Decimal(input(f"Enter deposit amount ({account.currency}): "))
         description = input("Enter description: ")
-    except Exception as e:
+    except Exception:
         console.clear_screen()
         print("Invalid input. Transaction cancelled.")
         return
     
     try:
-        account_service.deposit(conn, account.id, amount, description)
+        account_service.deposit(conn, account, amount, description)
         console.clear_screen()
         print(f"Deposit successful, {amount} {account.currency} deposited to account {account.name}.")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+
+def withdraw_ui(conn):
+    try:
+        account = helpers.select_account(conn, transaction="withdraw")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+
+    try:
+        print(f"Account {account.name} balance is {account.balance} {account.currency}.")
+        amount = Decimal(input(f"Enter withdrawal amount ({account.currency}): "))
+        description = input("Enter description: ")
+    except Exception:
+        console.clear_screen()
+        print("Invalid input. Transaction cancelled.")
+        return
+    
+    try:
+        account_service.withdraw(conn, account, amount, description)
+        console.clear_screen()
+        print(f"Withdrawal successful, {amount} {account.currency} withdrawn from account {account.name}.")
     except Exception as e:
         console.clear_screen()
         print(e)

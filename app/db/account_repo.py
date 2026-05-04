@@ -75,8 +75,7 @@ def change_balance(conn, account_id, amount):
 
     try:
         cursor.execute("UPDATE accounts SET balance = balance + %s WHERE id = %s", (amount, account_id))
-
-        if cursor.rowcount == 0:
-            raise ValueError("Account not found.")
+        return cursor.rowcount
+    
     finally:
         cursor.close()

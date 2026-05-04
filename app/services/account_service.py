@@ -45,7 +45,7 @@ def get_accounts(conn):
     raw_data = account_repo.get_all_accounts(conn)
     return [Account.from_row(row) for row in raw_data]
 
-def deposit(conn, account_id, amount, description):
+def deposit(conn, account, amount, description):
     if not validation.is_positive_number(amount):
         raise ValueError("Deposit amount must be positive. Transaction cancelled.")
     
@@ -53,9 +53,12 @@ def deposit(conn, account_id, amount, description):
         raise ValueError("Description cannot be empty. Transaction cancelled.")
 
     try:
-        account_repo.change_balance(conn, account_id, amount)
+        rows = account_repo.change_balance(conn, account.id, amount)
         #transactions_repo.add_transaction(conn, account_id, amount, description)
 
+        if rows == 0:
+            raise ValueError("Account not found")
+        
         conn.commit()
     
     except ValueError:
@@ -65,3 +68,33 @@ def deposit(conn, account_id, amount, description):
     except Exception as e:
         conn.rollback()
         raise RuntimeError("Deposit failed.") from e
+    
+def withdraw(conn, account, amount, description):
+    
+    if not validation.is_positive_number(amount):
+        raise ValueError("Withdrawal amount must be positive. Transaction cancelled.")
+
+    if not description.strip():
+        raise ValueError("Description cannot be empty. Transaction cancelled.")
+    
+    balance = account.balance
+
+    if balance < amount:
+        raise ValueError("Insufficient funds. Transaction cancelled.")
+    
+    try:
+        rows = account_repo.change_balance(conn, account.id, -amount)
+        #transactions_repo.add_transaction(conn, account_id, -amount, description)
+
+        if rows == 0:
+            raise ValueError("Account not found.")
+        
+        conn.commit()
+
+    except ValueError:
+        conn.rollback()
+        raise
+
+    except Exception as e:
+        conn.rollback()
+        raise RuntimeError("Withdrawal failed.") from e
