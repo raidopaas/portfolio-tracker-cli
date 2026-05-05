@@ -3,7 +3,7 @@ import ui.account_ui as account_ui
 import services.system_service as system_service
 #import ui.account_ui as account_ui
 import ui.transaction_ui as transaction_ui
-#import ui.stock_ui as stock_ui
+import ui.stock_ui as stock_ui
 import utils.console as console
 #import ui.goals_ui as goals_ui
 
@@ -26,8 +26,7 @@ def main_menu_loop(conn):
                 pass
                 #transaction_ui.view_transactions(conn)
             case "3":
-                pass
-                #stock_ui.view_stocks(conn)
+                stock_ui.view_stocks(conn)
             case "4":
                 transaction_ui.add_transaction_menu_loop(conn)
             case "5":

@@ -26,3 +26,11 @@ def save_stock(conn, stock):
         cursor.execute(query, values)
     finally:
         cursor.close()
+
+def get_stocks_by_listing(conn, listed):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("select * from stocks where listed = %s order by symbol asc", (listed,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
