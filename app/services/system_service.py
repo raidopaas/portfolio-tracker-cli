@@ -1,11 +1,13 @@
 import db.account_repo as account_repo
+import db.stock_repo as stock_repo
+import db.transaction_repo as transaction_repo
 
 def reset(conn):
     try:
         conn.start_transaction()
 
-        #stocks_repo.delete_stocks_table(conn)
-        #transactions_repo.delete_transactions_table(conn)           
+        stock_repo.delete_stocks_table(conn)
+        transaction_repo.delete_transactions_table(conn)           
         account_repo.delete_accounts_table(conn)
         #goals_repo.delete_goals_table(conn)
         conn.commit()

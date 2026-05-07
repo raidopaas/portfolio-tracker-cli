@@ -34,3 +34,10 @@ def get_stocks_by_listing(conn, listed):
         return cursor.fetchall()
     finally:
         cursor.close()
+
+def delete_stocks_table(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM stocks")
+    finally:
+        cursor.close()

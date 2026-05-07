@@ -1,7 +1,7 @@
 import utils.formatting as formatting
 
 class Transaction:
-    def __init__(self, id, account_id, amount, txn_date, description="", currency=None):
+    def __init__(self, account_id, amount, description="", id=None, txn_date=None, currency=None):
         self.id = id
         self.account_id = account_id
         self.amount = amount
@@ -18,4 +18,16 @@ class Transaction:
             f"{amount_str:>14}   "
             f"{txn_date_str:<12}   "
             f"{self.description}"
+        )
+    
+    @classmethod
+    def from_row(cls, row):
+        # Converts a database row (tuple) into a Transaction object
+        return cls(
+            id = row[0],
+            account_id = row[1],
+            amount = row[2],
+            txn_date = row[3],
+            description = row[4],
+            currency = row[5]
         )

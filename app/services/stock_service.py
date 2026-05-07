@@ -1,10 +1,13 @@
 from models.stock import Stock
 import services.account_service as account_service
 import db.stock_repo as stock_repo
+import db.account_repo as account_repo
+import db.transaction_repo as transaction_repo
 import api.stocks_api as stocks_api
 import services.fx_service as fx_service
 import time
 from decimal import Decimal
+from models.transaction import Transaction
 
 def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
     currency = "USD" if market == "US" else "EUR"
@@ -15,14 +18,20 @@ def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
     
     stock = Stock(symbol, quantity=qty, listed=market)
 
-    """ try:
-        previous_price = stocks_repo.get_stock_price(conn, symbol)
-    except Exception as e:
-        raise RuntimeError("Failed to access the database.") from e """
+    populate_stock_data(stock, price, dividend)
+        
+    transaction_cost = qty * stock.price
 
+    if transaction_cost > account.balance:
+        raise ValueError("Insufficient funds. Transaction cancelled.")
+    
+    description = f"Bought {qty} shares of {stock.symbol}"
+    transaction = Transaction(account.id, -transaction_cost, description)
+    
     try:
-        populate_stock_data(stock, price, dividend)
+        account_repo.change_balance(conn, account.id, -transaction_cost)
         stock_repo.save_stock(conn, stock)
+        transaction_repo.add_transaction(conn, transaction)
         conn.commit()
     except Exception as e:
         conn.rollback()
