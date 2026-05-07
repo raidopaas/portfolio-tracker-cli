@@ -39,3 +39,35 @@ def add_account_ui(conn):
     except Exception as e:
         console.clear_screen()
         print(e)
+
+def view_balances(conn):
+    console.clear_screen()
+
+    accounts = account_service.get_accounts(conn)
+
+    if not accounts:
+        print("No accounts available.")
+        return
+    
+    try:
+        data = account_service.get_totals(accounts)
+    except Exception as e:
+        console.clear_screen()
+        print("Failed to load balances:", e)
+        return
+
+    if data["total_usd_eur"] is None:
+        print("Could not retrieve USD data.")
+    else:
+        print(f"{'EUR Assets:':<20} {data['total_eur']:>12.2f} €")
+        print(f"{'USD Assets:':<20} {data['total_usd']:>12.2f} $ ({data['total_usd_eur']:>.2f} €)")
+        print(f"{'Total Assets:':<20} {data['grand_total']:>12.2f} €")
+
+    print("")
+    print("Accounts:")
+
+    for account in accounts:
+        print(account)
+
+    input("Press enter to continue...")
+    console.clear_screen()

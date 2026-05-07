@@ -1,7 +1,11 @@
 from models.account import Account
 from decimal import Decimal
 import db.account_repo as account_repo
+import db.transaction_repo as transaction_repo
 import utils.validation as validation
+from models.transaction import Transaction
+import api.fx_api as fx_api
+import services.fx_service as fx_service
 
 def add_account(conn, name, account_type, currency):
     account = Account(
@@ -51,13 +55,16 @@ def deposit(conn, account, amount, description):
     
     if not description.strip():
         raise ValueError("Description cannot be empty. Transaction cancelled.")
+    
+    transaction = Transaction(account.id, amount, description)
 
     try:
         rows = account_repo.change_balance(conn, account.id, amount)
-        #transactions_repo.add_transaction(conn, account_id, amount, description)
 
         if rows == 0:
             raise ValueError("Account not found")
+        
+        transaction_repo.add_transaction(conn, transaction)
         
         conn.commit()
     
@@ -82,12 +89,15 @@ def withdraw(conn, account, amount, description):
     if balance < amount:
         raise ValueError("Insufficient funds. Transaction cancelled.")
     
+    transaction = Transaction(account.id, -amount, description)
+    
     try:
         rows = account_repo.change_balance(conn, account.id, -amount)
-        #transactions_repo.add_transaction(conn, account_id, -amount, description)
 
         if rows == 0:
             raise ValueError("Account not found.")
+        
+        transaction_repo.add_transaction(conn, transaction)
         
         conn.commit()
 
@@ -98,3 +108,33 @@ def withdraw(conn, account, amount, description):
     except Exception as e:
         conn.rollback()
         raise RuntimeError("Withdrawal failed.") from e
+    
+def get_totals(accounts):
+    totals = []
+
+    total_eur = Decimal("0.00")
+    total_usd = Decimal("0.00")
+
+    for account in accounts:
+        if account.currency == 'EUR':
+            total_eur += account.balance
+        elif account.currency == 'USD':
+            total_usd += account.balance
+
+    rate = fx_api.get_usdeur()
+
+    if rate is None:
+        total_usd_eur = None
+        grand_total = None
+    else:
+        total_usd_eur = fx_service.usd_to_eur(total_usd, rate)
+        grand_total = total_eur + total_usd_eur
+
+    totals = {
+        "total_eur": total_eur,
+        "total_usd": total_usd,
+        "total_usd_eur": total_usd_eur,
+        "grand_total": grand_total
+    }
+
+    return totals

@@ -36,40 +36,6 @@ def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
     except Exception as e:
         conn.rollback()
         raise RuntimeError("Failed to buy stock. Transaction cancelled.") from e
-
-"""     try:
-        conn.rollback()
-        conn.start_transaction()
-
-        transaction_cost = qty * stock.price
-        balance = accounts_repo.get_account_balance(conn, account_id)
-
-        if transaction_cost > balance:
-            raise ValueError("Insufficient funds. Transaction cancelled.") #this also prompts the below runtime error message
-            
-        previous_qty = stocks_repo.get_stock_qty(conn, stock.symbol)
-        new_qty = previous_qty + qty
-
-        stock.quantity = new_qty
-        stocks_repo.save_stock(conn, stock)
-        
-        description = f"Bought {qty} share(s) of {stock.symbol}"
-        transactions_repo.add_transaction(conn, account_id, -transaction_cost, description)
-        
-        new_balance = balance - transaction_cost
-        stocks_balance_change = stock.price * new_qty - previous_price * previous_qty
-        accounts_repo.update_balance(conn, account_id, new_balance)
-        accounts_repo.add_stocks_balance(conn, account_id, stocks_balance_change)
-
-        conn.commit()
-
-    except ValueError:
-        conn.rollback()
-        raise
-
-    except Exception as e:
-        conn.rollback()
-        raise RuntimeError("Failed to execute stocks purchase. Transaction cancelled.") from e """
     
 def populate_stock_data(stock, price, dividend):
     if stock.listed=="US":

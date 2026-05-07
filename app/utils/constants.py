@@ -1,8 +1,13 @@
 from decimal import Decimal
 
-CURRENCIES = {
+MARKETS = {
     "US": "$",
     "EU": "€"
+}
+
+CURRENCIES = {
+    "USD": "$",
+    "EUR": "€"
 }
 
 NET_DIVIDEND_RATE = {

@@ -21,7 +21,7 @@ def main_menu_loop(conn):
         match response:
             case "1":
                 pass
-                #account_ui.view_balances(conn)
+                account_ui.view_balances(conn)
             case "2":
                 pass
                 #transaction_ui.view_transactions(conn)

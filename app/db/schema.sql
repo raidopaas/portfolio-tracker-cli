@@ -7,7 +7,6 @@ CREATE TABLE accounts (
     account_name VARCHAR(20),
     account_type ENUM("cash", "broker") NOT NULL,
     balance DECIMAL(10,2) DEFAULT 0.00,
-    stock_value DECIMAL(10,2) DEFAULT 0.00,
     currency CHAR(3) DEFAULT 'EUR'
 );
 

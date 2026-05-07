@@ -20,7 +20,7 @@ class Stock:
         return self.dividend_income() * constants.NET_DIVIDEND_RATE.get(self.listed, Decimal("1.00"))
 
     def __str__(self):
-        currency = constants.CURRENCIES[self.listed]
+        currency = constants.MARKETS[self.listed]
         date_str = str(self.dividend_date) if self.dividend_date else "-"
         net_str = f"({self.net_income():.2f} {currency})"
 
