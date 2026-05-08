@@ -1,5 +1,6 @@
 import utils.console as console
 import services.account_service as account_service
+import services.stock_service as stock_service
 from ui.helpers import validate_input
 
 def add_account_ui(conn):
@@ -44,13 +45,18 @@ def view_balances(conn):
     console.clear_screen()
 
     accounts = account_service.get_accounts(conn)
+    us_stocks = stock_service.get_stocks(conn, "US")
+    eu_stocks = stock_service.get_stocks(conn, "EU")
 
     if not accounts:
         print("No accounts available.")
         return
     
+    us_stocks_value = stock_service.get_total_value(us_stocks)
+    eu_stocks_value = stock_service.get_total_value(eu_stocks)
+    
     try:
-        data = account_service.get_totals(accounts)
+        data = account_service.get_totals(accounts, us_stocks_value, eu_stocks_value)
     except Exception as e:
         console.clear_screen()
         print("Failed to load balances:", e)
@@ -64,10 +70,16 @@ def view_balances(conn):
         print(f"{'Total Assets:':<20} {data['grand_total']:>12.2f} €")
 
     print("")
-    print("Accounts:")
+    print("Cash Assets:")
 
     for account in accounts:
         print(account)
+
+    print("")
+    print("Stock Assets:")
+    
+    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $")
+    print(f"{'EUR Value:' :<20} {eu_stocks_value:>12.2f} €")
 
     input("Press enter to continue...")
     console.clear_screen()

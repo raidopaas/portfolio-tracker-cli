@@ -109,17 +109,33 @@ def withdraw(conn, account, amount, description):
         conn.rollback()
         raise RuntimeError("Withdrawal failed.") from e
     
-def get_totals(accounts):
+def get_totals(accounts, us_stocks, eu_stocks):
     totals = []
+
+    us_broker_account = next((acc for acc in accounts if acc.account_type == "broker" and acc.currency == "USD"), None)
+    eu_broker_account = next((acc for acc in accounts if acc.account_type == "broker" and acc.currency == "EUR"), None)
 
     total_eur = Decimal("0.00")
     total_usd = Decimal("0.00")
 
     for account in accounts:
-        if account.currency == 'EUR':
+        if account.account_type == 'cash' and account.currency == 'EUR':
             total_eur += account.balance
-        elif account.currency == 'USD':
+        elif account.account_type == 'cash' and account.currency == 'USD':
             total_usd += account.balance
+
+    if eu_broker_account:
+        total_eur_broker = eu_broker_account.balance + eu_stocks
+    else:
+        total_eur_broker = Decimal("0.00")
+
+    if us_broker_account:
+        total_usd_broker = us_broker_account.balance + us_stocks
+    else:
+        total_usd_broker = Decimal("0.00")
+
+    total_eur += total_eur_broker
+    total_usd += total_usd_broker
 
     rate = fx_api.get_usdeur()
 
