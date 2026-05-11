@@ -78,8 +78,8 @@ def view_balances(conn):
     print("")
     print("Stock Assets:")
     
-    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $")
     print(f"{'EUR Value:' :<20} {eu_stocks_value:>12.2f} €")
+    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $")
 
     input("Press enter to continue...")
     console.clear_screen()

@@ -25,7 +25,8 @@ def add_transaction_menu_loop(conn):
                 console.clear_screen()
                 buy_stock_ui(conn)
             case "4":
-                pass
+                console.clear_screen()
+                sell_stock_ui(conn)
             case "5":
                 pass
             case "0":
@@ -104,6 +105,41 @@ def buy_stock_ui(conn):
             stock_service.buy_stock(conn, market, symbol, qty, price, dividend)
             console.clear_screen()
             print(f"Transaction succeeded. {qty} share of {symbol} has been purchased.")
+        except Exception as e:
+            console.clear_screen()
+            print(e)
+    else:
+        console.clear_screen()
+        print("Invalid input. Transaction cancelled.")
+        return
+    
+def sell_stock_ui(conn):
+    market = input("Enter stock market for the transaction (US/EU): ").upper()
+    if market in {"US", "EU"}:
+        try:
+            symbol = input("Enter stock symbol to sell: ").upper()
+            stock_qty = stock_service.get_stock_qty(conn, symbol)
+
+            console.clear_screen()
+            print(f"The balance of stock {symbol} is {stock_qty} shares.")
+            qty = int(input("Enter a number of shares to sell: "))
+
+            price = None
+            dividend = None
+
+            if market == "EU":
+                price = Decimal(input("Enter current stock price: "))
+                dividend = Decimal(input("Enter current dividend: "))
+
+        except Exception as e:
+            console.clear_screen()
+            print(e)
+            return
+
+        try:            
+            stock_service.sell_stock(conn, market, symbol, qty, stock_qty, price, dividend)
+            console.clear_screen()
+            print(f"Transaction succeeded. {qty} share(s) of {symbol} has been sold.")
         except Exception as e:
             console.clear_screen()
             print(e)
