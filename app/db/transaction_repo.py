@@ -28,8 +28,9 @@ def get_transactions_for_account(conn, account_id, year, month):
     cursor = conn.cursor()
 
     query = """
-        SELECT *
-        FROM transactions
+        SELECT t.*, a.currency
+        FROM transactions t
+        JOIN accounts a ON t.account_id = a.id
         WHERE account_id = %s
     """
     params = [account_id]
