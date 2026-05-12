@@ -28,6 +28,5 @@ class Transaction:
             account_id = row[1],
             amount = row[2],
             txn_date = row[3],
-            description = row[4],
-            currency = row[5]
+            description = row[4]
         )

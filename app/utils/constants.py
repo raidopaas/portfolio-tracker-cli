@@ -11,5 +11,6 @@ CURRENCIES = {
 }
 
 NET_DIVIDEND_RATE = {
-    "US": Decimal("0.85")
+    "US": Decimal("0.85"),
+    "EU": Decimal("1.00")
 }

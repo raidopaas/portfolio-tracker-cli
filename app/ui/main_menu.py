@@ -20,11 +20,9 @@ def main_menu_loop(conn):
         response = input("Enter your choice: ")
         match response:
             case "1":
-                pass
                 account_ui.view_balances(conn)
             case "2":
-                pass
-                #transaction_ui.view_transactions(conn)
+                transaction_ui.view_transactions(conn)
             case "3":
                 stock_ui.view_stocks(conn)
             case "4":

@@ -8,6 +8,7 @@ import services.fx_service as fx_service
 import time
 from decimal import Decimal
 from models.transaction import Transaction
+import utils.constants as constants
 
 def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
     currency = "USD" if market == "US" else "EUR"
@@ -126,10 +127,11 @@ def get_total_dividend(stocks):
     total_gross = Decimal("0.00")
     total_net = Decimal("0.00")
     for stock in stocks:
+        net_dividend_rate = constants.NET_DIVIDEND_RATE[stock.listed]
         bruto_dividend = stock.dividend_income()
-        net_divident = bruto_dividend * Decimal("0.85") if stock.listed == "US" else bruto_dividend
+        net_dividend = bruto_dividend * net_dividend_rate
         total_gross += bruto_dividend
-        total_net += net_divident
+        total_net += net_dividend
     return total_gross, total_net
 
 def calculate_portfolio_totals(

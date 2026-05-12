@@ -3,6 +3,8 @@ from decimal import Decimal
 import services.stock_service as stock_service
 import services.account_service as account_service
 import ui.helpers as helpers
+import utils.validation as validation
+import services.transaction_service as transaction_service
 
 def add_transaction_menu_loop(conn):
     console.clear_screen()
@@ -147,3 +149,61 @@ def sell_stock_ui(conn):
         console.clear_screen()
         print("Invalid input. Transaction cancelled.")
         return
+    
+def view_transactions(conn):
+    console.clear_screen()
+    transactions = None
+
+    try:
+        account = helpers.select_account(conn, transaction="transactions list")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+        
+    user_input = input(
+        "Do you want to see all the transactions history (Y/N): "
+    ).upper()
+
+    if user_input != "Y":
+        print("Enter year and month of the transactions to view.")
+        year = input("Enter year: ")
+        month = input("Enter month (1-12): ")
+
+        try:
+            year = int(year)
+            month = int(month)
+
+            if not validation.is_valid_month(month):
+                raise ValueError
+
+        except ValueError:
+            console.clear_screen()
+            print("Invalid input")
+            return
+    else:
+        year = None
+        month = None
+
+    try:
+        transactions = transaction_service.get_transactions_for_account(conn, account.id, year, month)
+    except ValueError as e:
+        console.clear_screen()
+        print(e)
+        return
+
+    if transactions:
+        console.clear_screen()
+        print_transactions(account.name, transactions)
+        input("Press Enter to continue...")
+        console.clear_screen()
+
+    else:
+        console.clear_screen()
+        print("No transactions found.")
+
+def print_transactions(account_name, transactions):
+    print(f"Transactions for account {account_name}:")
+    print(f"{'Amount':>14}   {'Date':<12}   Description")
+    for transaction in transactions:
+        print(transaction)
