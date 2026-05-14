@@ -154,3 +154,11 @@ def get_totals(accounts, us_stocks, eu_stocks):
     }
 
     return totals
+
+def remove_account(conn, account_id):
+    try:
+        account_repo.delete_account(conn, account_id)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise

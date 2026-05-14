@@ -1,7 +1,7 @@
 import utils.console as console
 import services.account_service as account_service
 import services.stock_service as stock_service
-from ui.helpers import validate_input
+import ui.helpers as helpers
 
 def add_account_ui(conn):
     type_map = {
@@ -19,7 +19,7 @@ def add_account_ui(conn):
 
     print("Select new account's type.")
     type_input = "Enter '1' for cash account or enter '2' for broker account: "
-    account_type = validate_input(type_input, type_map)
+    account_type = helpers.validate_input(type_input, type_map)
     if not account_type:
         console.clear_screen()
         print("Invalid input. Adding new account cancelled.")
@@ -27,7 +27,7 @@ def add_account_ui(conn):
     
     print("Select new account's currency.")
     currency_input = "Enter '1' for EUR or enter '2' for USD: "
-    currency = validate_input(currency_input, currency_map)
+    currency = helpers.validate_input(currency_input, currency_map)
     if not currency:
         console.clear_screen()
         print("Invalid input. Adding new account cancelled.")
@@ -40,6 +40,45 @@ def add_account_ui(conn):
     except Exception as e:
         console.clear_screen()
         print(e)
+
+def remove_account_ui(conn):
+    console.clear_screen()
+
+    try:
+        account = helpers.select_account(conn, "removal")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+    
+    if account.account_type == 'broker':
+        approved = validate_removal(conn, account)
+        if not approved:
+            console.clear_screen()
+            print("All open stock positions must be closed before removing broker account.")
+            return
+   
+    console.clear_screen()
+    confirmation = input(f"Confirm removal of account {account.name} (Y/N): ").upper()
+
+    if confirmation == "Y":   
+        try:
+            account_service.remove_account(conn, account.id)
+            console.clear_screen()
+            print(f"Account {account.name} removed successfully.")
+        except Exception as e:
+            console.clear_screen()
+            print(e)
+    else:
+        console.clear_screen()
+        print("Removing account cancelled.")
+        return
+    
+def validate_removal(conn, account):
+    listed = "US" if account.currency == "USD" else "EU"
+    if stock_service.get_stocks(conn, listed):
+        return False
+    return True
 
 def view_balances(conn):
     console.clear_screen()

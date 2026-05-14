@@ -26,6 +26,13 @@ def delete_accounts_table(conn):
     finally:
         cursor.close()
 
+def delete_account(conn, account_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM accounts WHERE id = %s", (account_id,))
+    finally:
+        cursor.close()
+
 def account_exists(conn, name, currency):
     cursor = conn.cursor()
     try:

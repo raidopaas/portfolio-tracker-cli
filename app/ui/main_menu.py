@@ -36,8 +36,7 @@ def main_menu_loop(conn):
                 if user_choice == "1":
                     account_ui.add_account_ui(conn)
                 elif user_choice == "2":
-                    pass
-                    #account_ui.remove_account_ui(conn)
+                    account_ui.remove_account_ui(conn)
                 else:
                     console.clear_screen()
                     print("Invalid input.")
