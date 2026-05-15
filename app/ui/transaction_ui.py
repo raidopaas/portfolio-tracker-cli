@@ -11,9 +11,10 @@ def add_transaction_menu_loop(conn):
     while True:
         print("1. Deposit")
         print("2. Withdraw")
-        print("3. Buy Stocks")
-        print("4. Sell Stocks")
-        print("5. Update Stocks")
+        print("3. Transfer")
+        print("4. Buy Stocks")
+        print("5. Sell Stocks")
+        print("6. Update Stocks")
         print("0. Main Menu")
         response = input("Select your transaction: ")
         match response:
@@ -25,18 +26,21 @@ def add_transaction_menu_loop(conn):
                 withdraw_ui(conn)
             case "3":
                 console.clear_screen()
-                buy_stock_ui(conn)
+                transfer_ui(conn)
             case "4":
                 console.clear_screen()
-                sell_stock_ui(conn)
+                buy_stock_ui(conn)
             case "5":
+                console.clear_screen()
+                sell_stock_ui(conn)
+            case "6":
                 pass
             case "0":
                 console.clear_screen()
                 break
             case _:
                 console.clear_screen()
-                print("Incorrect input. Please enter a number between 0 and 5.")
+                print("Incorrect input. Please enter a number between 0 and 6.")
                 continue
 
 def deposit_ui(conn):
@@ -83,6 +87,39 @@ def withdraw_ui(conn):
         account_service.withdraw(conn, account, amount, description)
         console.clear_screen()
         print(f"Withdrawal successful, {amount} {account.currency} withdrawn from account {account.name}.")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+
+def transfer_ui(conn):
+    try:
+        account_from = helpers.select_account(conn, "transfer from")
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+    
+    try:
+        print(f"Account {account_from.name} balance is {account_from.balance} {account_from.currency}.")
+        amount = Decimal(input(f"Enter transfer amount ({account_from.currency}): "))
+    except Exception:
+        console.clear_screen()
+        print("Invalid input. Transaction cancelled.")
+        return
+    
+    try:
+        account_to = helpers.select_account(conn, "transfer to", exclude_account=account_from)
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+    
+    try:
+        description_to = f"Transfer from {account_from.name} account."
+        description_from = f"Transfer to {account_to.name} account."
+        account_service.transfer(conn, account_from, account_to, amount, description_from, description_to)
+        console.clear_screen()
+        print(f"Transfer successful, {amount} {account_from.currency} transferred from {account_from.name} account to {account_to.name} account.")
     except Exception as e:
         console.clear_screen()
         print(e)

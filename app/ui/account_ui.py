@@ -51,12 +51,12 @@ def remove_account_ui(conn):
         print(e)
         return
     
-    if account.account_type == 'broker':
-        approved = validate_removal(conn, account)
-        if not approved:
-            console.clear_screen()
-            print("All open stock positions must be closed before removing broker account.")
-            return
+    approved = account_service.validate_account_removal(conn, account)
+
+    if not approved:
+        console.clear_screen()
+        print("Account's balances must be cleared before removal.")
+        return
    
     console.clear_screen()
     confirmation = input(f"Confirm removal of account {account.name} (Y/N): ").upper()
@@ -73,12 +73,6 @@ def remove_account_ui(conn):
         console.clear_screen()
         print("Removing account cancelled.")
         return
-    
-def validate_removal(conn, account):
-    listed = "US" if account.currency == "USD" else "EU"
-    if stock_service.get_stocks(conn, listed):
-        return False
-    return True
 
 def view_balances(conn):
     console.clear_screen()

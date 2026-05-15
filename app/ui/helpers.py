@@ -7,8 +7,9 @@ def validate_input(prompt, mapping):
         return None
     return value
 
-def select_account(conn, transaction):
-    accounts = account_service.get_accounts(conn)
+def select_account(conn, transaction, exclude_account=None):
+    console.clear_screen()
+    accounts = account_service.get_accounts(conn, exclude_account)
     
     if not accounts:
         raise ValueError("No accounts available.")

@@ -6,6 +6,7 @@ import utils.validation as validation
 from models.transaction import Transaction
 import api.fx_api as fx_api
 import services.fx_service as fx_service
+import services.stock_service as stock_service
 
 def add_account(conn, name, account_type, currency):
     account = Account(
@@ -45,9 +46,16 @@ def get_broker_account(conn, currency):
     
     return Account.from_row(row)
 
-def get_accounts(conn):
+def get_accounts(conn, exclude_account=None):
     raw_data = account_repo.get_all_accounts(conn)
-    return [Account.from_row(row) for row in raw_data]
+    accounts = [Account.from_row(row) for row in raw_data]
+
+    if exclude_account:
+        accounts = [
+            acc for acc in accounts if acc.id != exclude_account.id
+        ]
+
+    return accounts
 
 def deposit(conn, account, amount, description):
     if not validation.is_positive_number(amount):
@@ -109,6 +117,29 @@ def withdraw(conn, account, amount, description):
         conn.rollback()
         raise RuntimeError("Withdrawal failed.") from e
     
+def transfer(conn, account_from, account_to, amount, description_from, description_to):
+    currency_from = account_from.currency
+    currency_to = account_to.currency
+
+    if currency_from == currency_to:
+        withdraw(conn, account_from, amount, description_from)
+        deposit(conn, account_to, amount, description_to)
+        return
+    
+    rate = fx_service.get_usd_to_eur_rate()
+
+    if rate is None:
+        raise RuntimeError("Failed to convert currencies. Transaction cancelled.")
+    
+    converted_amount = (
+        fx_service.usd_to_eur(amount, rate)
+        if currency_from == "USD"
+        else fx_service.eur_to_usd(amount, rate)
+    )
+    
+    withdraw(conn, account_from, amount, description_from)
+    deposit(conn, account_to, converted_amount, description_to)
+    
 def get_totals(accounts, us_stocks, eu_stocks):
     totals = []
 
@@ -154,6 +185,15 @@ def get_totals(accounts, us_stocks, eu_stocks):
     }
 
     return totals
+
+def validate_account_removal(conn, account):
+    if account.balance > Decimal("0.00"):
+        return False
+    elif account.account_type == 'broker':
+        listed = "US" if account.currency == "USD" else "EU"
+        if stock_service.get_stocks(conn, listed):
+            return False
+    return True
 
 def remove_account(conn, account_id):
     try:
