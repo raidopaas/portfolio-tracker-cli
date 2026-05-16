@@ -5,7 +5,7 @@ import services.system_service as system_service
 import ui.transaction_ui as transaction_ui
 import ui.stock_ui as stock_ui
 import utils.console as console
-#import ui.goals_ui as goals_ui
+import ui.insights_ui as insights_ui
 
 def main_menu_loop(conn):
     while True:
@@ -13,7 +13,7 @@ def main_menu_loop(conn):
         print("2. View Transactions")
         print("3. View Stocks")
         print("4. Add Transaction")
-        print("5. Financial Goals")
+        print("5. Insights")
         print("6. Add/Remove Account")
         print("7. Reset Data")
         print("0. Exit Program")
@@ -28,8 +28,7 @@ def main_menu_loop(conn):
             case "4":
                 transaction_ui.add_transaction_menu_loop(conn)
             case "5":
-                pass
-                #goals_ui.goals_ui_menu_loop(conn)
+                insights_ui.insights_menu_loop(conn)
             case "6":
                 console.clear_screen()
                 user_choice = input("Enter 1 to add account or enter 2 to remove account: ")

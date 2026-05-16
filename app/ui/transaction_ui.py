@@ -1,5 +1,5 @@
 import utils.console as console
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import services.stock_service as stock_service
 import services.account_service as account_service
 import ui.helpers as helpers
@@ -34,7 +34,8 @@ def add_transaction_menu_loop(conn):
                 console.clear_screen()
                 sell_stock_ui(conn)
             case "6":
-                pass
+                console.clear_screen()
+                update_stocks_ui(conn)
             case "0":
                 console.clear_screen()
                 break
@@ -186,6 +187,42 @@ def sell_stock_ui(conn):
         console.clear_screen()
         print("Invalid input. Transaction cancelled.")
         return
+    
+def update_stocks_ui(conn):
+    eu_stocks = stock_service.get_stocks(conn, "EU")
+
+    manual_updates = {}
+
+    for stock in eu_stocks:
+        console.clear_screen()
+        symbol = stock.symbol
+
+        print(f"\nUpdating {symbol} (EU)")
+
+        try:
+            price = Decimal(input("Enter current price: "))
+            dividend = Decimal(input("Enter current dividend: "))
+        except InvalidOperation:
+            console.clear_screen()
+            print("Invalid input. Skipping this stock.")
+            continue
+
+        manual_updates[symbol] = {
+            "price": price,
+            "dividend": dividend
+        }
+
+    update_all = True if manual_updates else False
+
+    try:
+        stock_service.update_stocks(conn, update_all, manual_updates=manual_updates)
+    except Exception as e:
+        console.clear_screen()
+        print(e)
+        return
+
+    console.clear_screen()
+    print("Stocks updated succesfully!")
     
 def view_transactions(conn):
     console.clear_screen()

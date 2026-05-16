@@ -3,7 +3,7 @@ import services.account_service as account_service
 import db.stock_repo as stock_repo
 import db.account_repo as account_repo
 import db.transaction_repo as transaction_repo
-import api.stocks_api as stocks_api
+import app.api.stock_api as stock_api
 import services.fx_service as fx_service
 import time
 from decimal import Decimal
@@ -75,6 +75,34 @@ def sell_stock(conn, market, symbol, qty, stock_qty, price, dividend=None):
         conn.rollback()
         raise RuntimeError("Failed to sell stock. Transaction cancelled.") from e
     
+def update_stocks(conn, update_all, manual_updates=None):
+
+    try:
+        us_stocks = get_stocks(conn, "US")
+
+        for stock in us_stocks:
+            populate_stock_data(stock, price=None, dividend=None)
+            stock_repo.save_stock(conn, stock)
+
+        if update_all:
+            eu_stocks = get_stocks(conn, "EU")
+
+            for stock in eu_stocks:
+
+                data = manual_updates[stock.symbol]
+                price = data["price"]
+                dividend = data["dividend"]
+
+                populate_stock_data(stock, price, dividend)
+                
+                stock_repo.save_stock(conn, stock)
+
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        raise RuntimeError("Failed to update stocks.") from e
+    
 def populate_stock_data(stock, price, dividend):
     if stock.listed=="US":
         update_price(stock)
@@ -87,25 +115,21 @@ def populate_stock_data(stock, price, dividend):
 
 def update_price(stock, manual_price=None):
     if stock.listed == 'US':
-        stock.price = stocks_api.get_latest_us_stock_price(stock.symbol)
-    """ else:
-        if manual_price is None: #code actually would never reach here
-            raise ValueError("Manual price required for non-US stocks.")
+        stock.price = stock_api.get_latest_us_stock_price(stock.symbol)
+    else:
         if manual_price < 0:
             raise ValueError("Stock price cannot be negative.")
-        stock.price = manual_price """
+        stock.price = manual_price
 
 def update_dividend(stock, manual_dividend=None):
     if stock.listed == 'US':
-        dividend, date = stocks_api.get_latest_us_stock_dividend(stock.symbol)
+        dividend, date = stock_api.get_latest_us_stock_dividend(stock.symbol)
         stock.dividend = dividend
         stock.dividend_date = date
-    """ else:
-        if manual_dividend is None: #code actually would never reach here
-            raise ValueError("Manual dividend required for non-US stocks.")
+    else:
         if manual_dividend < 0:
             raise ValueError("Dividend cannot be negative.")
-        stock.dividend = manual_dividend """
+        stock.dividend = manual_dividend
     
 def get_stocks(conn, listed):
     raw_data = stock_repo.get_stocks_by_listing(conn, listed)
