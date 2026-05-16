@@ -33,13 +33,21 @@ def insights_menu_loop(conn):
 def statistics_ui(conn):
     accounts = account_service.get_accounts(conn)
     year = datetime.now().year
-    account_transactions = {}
-    account_number = 0
+    month = datetime.now().month
 
-    for acc in accounts:
-        account_transactions[acc.name] = transaction_service.get_transactions_for_account(conn, acc.id, year, month=None)
-        for transaction in account_transactions[acc.name]:
-            print(transaction)
-        input("Press Enter to continue...")
-        account_number += 1
+    totals_month = transaction_service.get_totals(conn, accounts, year, month)
+    totals_year = transaction_service.get_totals(conn, accounts, year)
     
+    print("Progress:\n")
+    print_totals(accounts, totals_month, totals_year)
+
+    input("Press Enter to continue...")
+    console.clear_screen()
+
+def print_totals(accounts, totals_month, totals_year):
+    print(f"{'Account':<15} {'Month':>12} {'Year':>12}")
+    for account in accounts:
+        print(f"{account.name:<15} {totals_month[account.name]:>12.2f} {totals_year[account.name]:>12.2f}")
+
+    print("-" * 41)
+    print(f"{'Grand Total':<15} {totals_month['Grand Total']:>12.2f} {totals_year['Grand Total']:>12.2f}")

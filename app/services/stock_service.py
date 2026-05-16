@@ -3,7 +3,7 @@ import services.account_service as account_service
 import db.stock_repo as stock_repo
 import db.account_repo as account_repo
 import db.transaction_repo as transaction_repo
-import app.api.stock_api as stock_api
+import api.stock_api as stock_api
 import services.fx_service as fx_service
 import time
 from decimal import Decimal
