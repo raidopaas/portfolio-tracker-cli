@@ -3,6 +3,7 @@ import services.account_service as account_service
 import services.transaction_service as transaction_service
 from models.transaction import Transaction
 from datetime import datetime
+import utils.formatting as formatting
 
 def insights_menu_loop(conn):
     console.clear_screen()
@@ -45,9 +46,10 @@ def statistics_ui(conn):
     console.clear_screen()
 
 def print_totals(accounts, totals_month, totals_year):
-    print(f"{'Account':<15} {'Month':>12} {'Year':>12}")
+    print(f"{'Account':<15} {'Month':>14} {'Year':>14}")
     for account in accounts:
-        print(f"{account.name:<15} {totals_month[account.name]:>12.2f} {totals_year[account.name]:>12.2f}")
+        currency = "$" if account.currency == "USD" else "€"
+        print(f"{account.name:<15} {totals_month[account.name]:>12.2f} {currency} {totals_year[account.name]:>12.2f} {currency}")
 
-    print("-" * 41)
-    print(f"{'Grand Total':<15} {totals_month['Grand Total']:>12.2f} {totals_year['Grand Total']:>12.2f}")
+    print("-" * 47)
+    print(f"{'Grand Total':<15} {totals_month['Grand Total']:>12.2f} € {totals_year['Grand Total']:>12.2f} €")
