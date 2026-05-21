@@ -46,10 +46,18 @@ def statistics_ui(conn):
     console.clear_screen()
 
 def print_totals(accounts, totals_month, totals_year):
-    print(f"{'Account':<15} {'Month':>14} {'Year':>14}")
+    print(f"{'Account':<15} {'Month':>15} {'Year':>15}")
     for account in accounts:
         currency = "$" if account.currency == "USD" else "€"
-        print(f"{account.name:<15} {totals_month[account.name]:>12.2f} {currency} {totals_year[account.name]:>12.2f} {currency}")
+        print(
+            f"{account.name:<15} "
+            f"{formatting.format_currency(totals_month[account.name], currency):>15} "
+            f"{formatting.format_currency(totals_year[account.name], currency):>15}"
+        )
 
-    print("-" * 47)
-    print(f"{'Grand Total':<15} {totals_month['Grand Total']:>12.2f} € {totals_year['Grand Total']:>12.2f} €")
+    print("-" * 50)
+    print(
+        f"{'Grand Total':<15} "
+        f"{formatting.format_currency(totals_month['Grand Total'], "€"):>15} "
+        f"{formatting.format_currency(totals_year['Grand Total'], "€"):>15}"
+    )
