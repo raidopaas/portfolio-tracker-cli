@@ -35,14 +35,13 @@ CREATE TABLE stocks (
 
 CREATE TABLE goals (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(25),
     target_amount DECIMAL(10,2) NOT NULL,
     deadline DATE NOT NULL,
     scope ENUM("portfolio", "account") NOT NULL,
-    period ENUM("total", "annual") NOT NULL,
+    period ENUM("total", "annual", "monthly") NOT NULL,
     account_id INT NULL,
 
     CONSTRAINT fk_goals_account
-    FOREIGN KEY (account_id) REFERENCES accounts(id)
-    ON DELETE CASCADE
+	FOREIGN KEY (account_id) REFERENCES accounts(id)
+	ON DELETE CASCADE
 );

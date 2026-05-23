@@ -46,14 +46,18 @@ def print_stocks(conn, listed):
         total_value = stock_service.get_total_value(stocks)
         total_gross, total_net = stock_service.get_total_dividend(stocks)
 
+        subtotal_value = formatting.format_currency(total_value, currency)
+        subtotal_gross = formatting.format_currency(total_gross, currency)
+        subtotal_net = f'({formatting.format_currency(total_net, currency)})'
+
         print(
         f"{'Subtotal':<8} "
         f"{' ':>6} "
         f"{' ':>12} "
-        f"{total_value:>12.2f} {currency} "
+        f"{subtotal_value:>14} "
         f"{' ':>10} "
-        f"{total_gross:>8.2f} {currency} "
-        f"{f'({formatting.format_currency(total_net, currency)})':>10}"
+        f"{subtotal_gross:>10} "
+        f"{subtotal_net:>10}"
           )
     else:
         print(f"No {listed} stocks found.")
@@ -61,12 +65,13 @@ def print_stocks(conn, listed):
     return total_value, total_gross, total_net 
     
 def print_totals(portfolio_value_eur, dividend_gross_eur, dividend_net_eur):
+    currency = "€"
     print(
             f"{'Total':<8} "
             f"{' ':>6} "
             f"{' ':>12} "
-            f"{portfolio_value_eur:>12.2f} € "
+            f"{formatting.format_currency(portfolio_value_eur, currency):>14} "
             f"{' ':>10} "
-            f"{dividend_gross_eur:>8.2f} € "
-            f"{f'({formatting.format_currency(dividend_net_eur, "€")})':>10}"
+            f"{formatting.format_currency(dividend_gross_eur, currency):>10} "
+            f"{f'({formatting.format_currency(dividend_net_eur, currency)})':>10}"
             )

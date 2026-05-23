@@ -5,6 +5,7 @@ import services.account_service as account_service
 import ui.helpers as helpers
 import utils.validation as validation
 import services.transaction_service as transaction_service
+import utils.formatting as formatting
 
 def add_transaction_menu_loop(conn):
     console.clear_screen()
@@ -62,7 +63,7 @@ def deposit_ui(conn):
     try:
         account_service.deposit(conn, account, amount, description)
         console.clear_screen()
-        print(f"Deposit successful, {amount} {account.currency} deposited to account {account.name}.")
+        print(f"Deposit successful, {formatting.format_currency(amount, account.currency)} deposited to account {account.name}.")
     except Exception as e:
         console.clear_screen()
         print(e)
@@ -87,7 +88,7 @@ def withdraw_ui(conn):
     try:
         account_service.withdraw(conn, account, amount, description)
         console.clear_screen()
-        print(f"Withdrawal successful, {amount} {account.currency} withdrawn from account {account.name}.")
+        print(f"Withdrawal successful, {formatting.format_currency(amount, account.currency)} withdrawn from account {account.name}.")
     except Exception as e:
         console.clear_screen()
         print(e)
@@ -120,7 +121,7 @@ def transfer_ui(conn):
         description_from = f"Transfer to {account_to.name} account."
         account_service.transfer(conn, account_from, account_to, amount, description_from, description_to)
         console.clear_screen()
-        print(f"Transfer successful, {amount} {account_from.currency} transferred from {account_from.name} account to {account_to.name} account.")
+        print(f"Transfer successful, {formatting.format_currency(amount, account_from.currency)} transferred from {account_from.name} account to {account_to.name} account.")
     except Exception as e:
         console.clear_screen()
         print(e)
