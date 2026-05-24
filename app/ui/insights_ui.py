@@ -4,13 +4,14 @@ import services.transaction_service as transaction_service
 from models.transaction import Transaction
 from datetime import datetime
 import utils.formatting as formatting
+import ui.goal_ui as goal_ui
 
 def insights_menu_loop(conn):
     console.clear_screen()
     while True:
         print("1. View Statistics")
         print("2. View Progress")
-        print("3. Add/Remove Goal")
+        print("3. Add/Remove/Modify Goals")
         print("0. Main Menu")
         response = input("Select your option: ")
         match response:
@@ -22,7 +23,7 @@ def insights_menu_loop(conn):
                 #withdraw_ui(conn)
             case "3":
                 console.clear_screen()
-                #transfer_ui(conn)
+                goal_ui.goals_menu_loop(conn)
             case "0":
                 console.clear_screen()
                 break
