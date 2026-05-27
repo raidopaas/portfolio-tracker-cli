@@ -1,5 +1,7 @@
 from models.goal import Goal, GoalScope, GoalPeriod
 import db.goal_repo as goal_repo
+from datetime import datetime
+import calendar
 
 def add_goal(conn, target_amount, deadline, scope, period, account_id=None):
     goal = Goal(
@@ -20,7 +22,11 @@ def add_goal(conn, target_amount, deadline, scope, period, account_id=None):
         raise
     except Exception as e:
         conn.rollback()
-        raise RuntimeError(f"Adding goal {goal.name} failed.") from e
+        raise
     
 def validate_goal(conn, goal):
-    pass
+    if goal.deadline <= datetime.today().date():
+        raise ValueError("Goal deadline cannot be today or less.")
+
+def has_portfolio_goal(conn):
+    return goal_repo.has_portfolio_goal(conn)

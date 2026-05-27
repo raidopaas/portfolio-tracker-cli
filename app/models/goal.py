@@ -28,7 +28,7 @@ class Goal:
 
     @property
     def name(self):
-        return f"{self.scope.capitalize()} {self.period}"
+        return f"{self.scope.value.capitalize()} {self.period}"
     
     @classmethod
     def from_row(cls, row):

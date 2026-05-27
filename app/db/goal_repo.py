@@ -20,3 +20,11 @@ def add_goal(conn, goal):
         cursor.execute(query, values)
     finally:
         cursor.close()
+
+def has_portfolio_goal(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT 1 FROM goals WHERE scope = 'portfolio' LIMIT 1")
+        return cursor.fetchone() is not None
+    finally:
+        cursor.close()

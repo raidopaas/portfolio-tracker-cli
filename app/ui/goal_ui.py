@@ -2,6 +2,8 @@ import utils.console as console
 from models.goal import GoalScope, GoalPeriod
 from datetime import datetime
 import calendar
+import services.goal_service as goal_service
+from decimal import Decimal
 
 def goals_menu_loop(conn):
     console.clear_screen()
@@ -24,7 +26,31 @@ def goals_menu_loop(conn):
                 continue
 
 def add_goal_ui(conn):
-    while True:
+    if not goal_service.has_portfolio_goal(conn):
+        print("Portfolio goal must be added first.")
+        deadline_input = input("Enter goal deadline (YYYY-MM-DD): ")
+        try:
+            deadline = datetime.strptime(deadline_input, "%Y-%m-%d").date()
+        except ValueError:
+            console.clear_screen()
+            print("Invalid date input")
+            return
+        try:
+            target_amount = Decimal(input("Enter target amount: "))
+        except Exception:
+            console.clear_screen()
+            print("Invalid input")
+            return
+        try:
+            goal_service.add_goal(conn, target_amount, deadline, GoalScope.PORTFOLIO, GoalPeriod.TOTAL)
+            console.clear_screen()
+            print("Portfolio goal added succesfully.")
+        except Exception as e:
+            console.clear_screen()
+            print("Adding new goal failed", e)
+            return
+
+"""     while True:
         print("Select Goal Type:")
         print("1. Account")
         print("2. Portfolio")
@@ -77,4 +103,4 @@ def add_goal_ui(conn):
 
         print(goal_period.value + goal_scope.value + str(deadline))
         input("Press enter to continue")
-        break
+        break """
