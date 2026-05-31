@@ -32,5 +32,5 @@ def print_account_list(accounts):
     print(f"{'Number':<5} {'Name':<20} {'Currency':<10}")
 
     for acc in accounts:
-        print(f"{index:<5} {acc.name:<20} {acc.currency:<10}")
+        print(f"{index:<6} {acc.name:<20} {acc.currency:<10}")
         index += 1

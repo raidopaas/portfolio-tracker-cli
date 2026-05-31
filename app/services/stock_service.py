@@ -17,7 +17,10 @@ def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
     if qty <= 0:
         raise ValueError("Quantity must be positive. Transaction cancelled.")
     
-    stock = Stock(symbol, quantity=qty, listed=market)
+    previous_qty = get_stock_qty(conn, symbol)
+    new_qty = previous_qty + qty
+    
+    stock = Stock(symbol, quantity=new_qty, listed=market)
 
     populate_stock_data(stock, price, dividend)
         
@@ -38,14 +41,14 @@ def buy_stock(conn, market, symbol, qty, price=None, dividend=None):
         conn.rollback()
         raise RuntimeError("Failed to buy stock. Transaction cancelled.") from e
     
-def sell_stock(conn, market, symbol, qty, stock_qty, price, dividend=None):
+def sell_stock(conn, market, symbol, qty, current_qty, price, dividend=None):
     currency = "USD" if market == "US" else "EUR"
     account = account_service.get_broker_account(conn, currency)
 
     if qty <= 0:
         raise ValueError("Quantity must be positive. Transaction cancelled.")
     
-    if qty > stock_qty:
+    if qty > current_qty:
         raise ValueError("Not enough stock to complete transaction. Transaction cancelled.")
     
     stock = Stock(symbol, quantity=qty, listed=market)
@@ -55,7 +58,7 @@ def sell_stock(conn, market, symbol, qty, stock_qty, price, dividend=None):
     description = f"Sold {qty} share(s) of {symbol}"
     transaction = Transaction(account.id, transaction_cost, description)
 
-    new_qty = stock_qty - qty
+    new_qty = current_qty - qty
 
     try:
         if new_qty == 0:
@@ -137,8 +140,6 @@ def get_stocks(conn, listed):
 
 def get_stock_qty(conn, symbol):
     qty = stock_repo.get_stock_qty(conn, symbol)
-    if qty == 0:
-        raise ValueError("Stock not found.")
     return qty
 
 def get_total_value(stocks):

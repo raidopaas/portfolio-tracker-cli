@@ -28,3 +28,18 @@ def has_portfolio_goal(conn):
         return cursor.fetchone() is not None
     finally:
         cursor.close()
+
+def get_portfolio_deadline(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT deadline FROM goals WHERE scope = 'portfolio' AND period = 'total'")
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+
+def delete_goals_table(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM goals")
+    finally:
+        cursor.close()

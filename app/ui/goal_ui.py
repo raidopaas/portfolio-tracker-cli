@@ -4,6 +4,7 @@ from datetime import datetime
 import calendar
 import services.goal_service as goal_service
 from decimal import Decimal
+import services.account_service as account_service
 
 def goals_menu_loop(conn):
     console.clear_screen()
@@ -11,18 +12,26 @@ def goals_menu_loop(conn):
         print("1. Add Goal")
         print("2. View Progress")
         print("3. Add/Remove/Modify Goals")
+        print("4. Reset Goals")
         print("0. Main Menu")
         response = input("Select your option: ")
         match response:
             case "1":
                 console.clear_screen()
                 add_goal_ui(conn)
+            case "4":
+                console.clear_screen()
+                try:
+                    goal_service.reset_goals(conn)
+                except Exception as e:
+                    print(e)
+                print("Goals have been reset.")
             case "0":
                 console.clear_screen()
                 break
             case _:
                 console.clear_screen()
-                print("Incorrect input. Please enter a number between 0 and 3.")
+                print("Incorrect input. Please enter a number between 0 and 4.")
                 continue
 
 def add_goal_ui(conn):
@@ -36,7 +45,7 @@ def add_goal_ui(conn):
             print("Invalid date input")
             return
         try:
-            target_amount = Decimal(input("Enter target amount: "))
+            target_amount = Decimal(input("Enter target amount (€): "))
         except Exception:
             console.clear_screen()
             print("Invalid input")
@@ -45,6 +54,32 @@ def add_goal_ui(conn):
             goal_service.add_goal(conn, target_amount, deadline, GoalScope.PORTFOLIO, GoalPeriod.TOTAL)
             console.clear_screen()
             print("Portfolio goal added succesfully.")
+        except Exception as e:
+            console.clear_screen()
+            print("Adding new goal failed", e)
+            return
+        
+    accounts = account_service.get_accounts(conn)
+
+    try:
+        deadline = goal_service.get_portfolio_deadline(conn)
+    except Exception as e:
+        console.clear_screen()
+        print("Unable to retrieve portfolio deadline", e)
+        return
+
+    for account in accounts:
+        currency = "$" if account.currency == "USD" else "€"
+        try:
+            target_amount = Decimal(input(f"Enter target amount for account {account.name} ({currency}): "))
+        except Exception:
+            console.clear_screen()
+            print("Invalid input")
+            return
+        try:
+            goal_service.add_goal(conn, target_amount, deadline, GoalScope.ACCOUNT, GoalPeriod.TOTAL, account.id)
+            console.clear_screen()
+            print(f"Account {account.name} total goal added succesfully.")
         except Exception as e:
             console.clear_screen()
             print("Adding new goal failed", e)

@@ -30,3 +30,14 @@ def validate_goal(conn, goal):
 
 def has_portfolio_goal(conn):
     return goal_repo.has_portfolio_goal(conn)
+
+def get_portfolio_deadline(conn):
+    return goal_repo.get_portfolio_deadline(conn)    
+
+def reset_goals(conn):
+    try:
+        goal_repo.delete_goals_table(conn)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise RuntimeError("Reseting goals failed") from e

@@ -159,10 +159,10 @@ def sell_stock_ui(conn):
     if market in {"US", "EU"}:
         try:
             symbol = input("Enter stock symbol to sell: ").upper()
-            stock_qty = stock_service.get_stock_qty(conn, symbol)
+            current_qty = stock_service.get_stock_qty(conn, symbol)
 
             console.clear_screen()
-            print(f"The balance of stock {symbol} is {stock_qty} shares.")
+            print(f"The balance of stock {symbol} is {current_qty} shares.")
             qty = int(input("Enter a number of shares to sell: "))
 
             price = None
@@ -178,7 +178,7 @@ def sell_stock_ui(conn):
             return
 
         try:            
-            stock_service.sell_stock(conn, market, symbol, qty, stock_qty, price, dividend)
+            stock_service.sell_stock(conn, market, symbol, qty, current_qty, price, dividend)
             console.clear_screen()
             print(f"Transaction succeeded. {qty} share(s) of {symbol} has been sold.")
         except Exception as e:
