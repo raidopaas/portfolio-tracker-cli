@@ -1,6 +1,6 @@
 from models.goal import Goal, GoalScope, GoalPeriod
 import db.goal_repo as goal_repo
-from datetime import datetime
+from datetime import datetime, date
 import calendar
 
 def add_goal(conn, target_amount, deadline, scope, period, account_id=None):
@@ -32,7 +32,39 @@ def has_portfolio_goal(conn):
     return goal_repo.has_portfolio_goal(conn)
 
 def get_portfolio_deadline(conn):
-    return goal_repo.get_portfolio_deadline(conn)    
+    return goal_repo.get_portfolio_deadline(conn)
+
+def add_account_mid_goals(conn, target_amount, deadline, account_id):
+    today = datetime.today().date()
+    full_years = deadline.year - today.year
+    full_months = 12 - today.month + 12 * full_years
+    monthly_contribution = target_amount / full_months
+    yearly_contribution = monthly_contribution * 12
+    annual_contribution = monthly_contribution * (12 - today.month)
+    annual_deadline = date(today.year, 12, 31)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    end_of_month = date(today.year, today.month, last_day)
+    add_goal(conn, annual_contribution, annual_deadline, GoalScope.ACCOUNT, GoalPeriod.ANNUAL, account_id)
+    add_goal(conn, monthly_contribution, end_of_month, GoalScope.ACCOUNT, GoalPeriod.MONTHLY, account_id)
+    for index in range(0, full_years):
+        annual_deadline = date(today.year + index + 1, 12, 31)
+        add_goal(conn, yearly_contribution, annual_deadline, GoalScope.ACCOUNT, GoalPeriod.ANNUAL, account_id)
+
+def add_mid_goals(conn, end_target, deadline):
+    today = datetime.today().date()
+    full_years = deadline.year - today.year
+    full_months = 12 - today.month + 12 * full_years
+    monthly_contribution = end_target / full_months
+    yearly_contribution = monthly_contribution * 12
+    annual_contribution = monthly_contribution * (12 - today.month)
+    annual_deadline = date(today.year, 12, 31)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    end_of_month = date(today.year, today.month, last_day)
+    add_goal(conn, annual_contribution, annual_deadline, GoalScope.PORTFOLIO, GoalPeriod.ANNUAL)
+    add_goal(conn, monthly_contribution, end_of_month, GoalScope.PORTFOLIO, GoalPeriod.MONTHLY)
+    for index in range(0, full_years):
+        annual_deadline = date(today.year + index + 1, 12, 31)
+        add_goal(conn, yearly_contribution, annual_deadline, GoalScope.PORTFOLIO, GoalPeriod.ANNUAL)
 
 def reset_goals(conn):
     try:
