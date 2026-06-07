@@ -52,9 +52,15 @@ def get_accounts(conn, exclude_account=None):
 
     if exclude_account:
         accounts = [
-            acc for acc in accounts if acc.id != exclude_account.id
+            acc for acc in accounts if acc.id not in exclude_account
         ]
 
+    return accounts
+
+def get_cash_accounts(conn):
+    eur_broker_account = get_broker_account(conn, "EUR").id
+    usd_broker_account = get_broker_account(conn, "USD").id
+    accounts = get_accounts(conn, [eur_broker_account, usd_broker_account])
     return accounts
 
 def deposit(conn, account, amount, description):

@@ -110,7 +110,7 @@ def transfer_ui(conn):
         return
     
     try:
-        account_to = helpers.select_account(conn, "transfer to", exclude_account=account_from)
+        account_to = helpers.select_account(conn, "transfer to", exclude_account=[account_from.id])
     except Exception as e:
         console.clear_screen()
         print(e)

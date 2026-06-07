@@ -52,7 +52,7 @@ def add_goal_ui(conn):
         print("Invalid date input")
         return
 
-    accounts = account_service.get_accounts(conn)
+    accounts = account_service.get_cash_accounts(conn)
     end_target = Decimal("0.00")
 
     for account in accounts:
