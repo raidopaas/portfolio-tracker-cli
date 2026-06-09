@@ -119,9 +119,10 @@ def transfer_ui(conn):
     try:
         description_to = f"Transfer from {account_from.name} account."
         description_from = f"Transfer to {account_to.name} account."
-        account_service.transfer(conn, account_from, account_to, amount, description_from, description_to)
+        transferred_amount = account_service.transfer(conn, account_from, account_to, amount, description_from, description_to)
         console.clear_screen()
         print(f"Transfer successful, {formatting.format_currency(amount, account_from.currency)} transferred from {account_from.name} account to {account_to.name} account.")
+        print(f"The credited amount is {formatting.format_currency(transferred_amount, account_to.currency)}.")
     except Exception as e:
         console.clear_screen()
         print(e)

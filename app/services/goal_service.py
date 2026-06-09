@@ -66,6 +66,13 @@ def add_mid_goals(conn, end_target, deadline):
         annual_deadline = date(today.year + index + 1, 12, 31)
         add_goal(conn, yearly_contribution, annual_deadline, GoalScope.PORTFOLIO, GoalPeriod.ANNUAL)
 
+def get_goals_for_account(conn, account_id):
+    rows = goal_repo.get_goals_for_account(conn, account_id)
+    account_goals = []
+    for row in rows:
+        account_goals.append(Goal.from_row(row))
+    return account_goals
+
 def reset_goals(conn):
     try:
         goal_repo.delete_goals_table(conn)

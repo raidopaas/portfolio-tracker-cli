@@ -26,6 +26,13 @@ class Goal:
         self.period = period
         self.account_id = account_id
 
+    def __str__(self):
+        return (
+            f"{self.name:<20} "
+            f"{self.target_amount:>10.2f} "
+            f"{self.deadline}"
+        )
+
     @property
     def name(self):
         return f"{self.scope.value.capitalize()} {self.period}"

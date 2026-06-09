@@ -37,6 +37,14 @@ def get_portfolio_deadline(conn):
     finally:
         cursor.close()
 
+def get_goals_for_account(conn, account_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM goals WHERE account_id = %s", (account_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+
 def delete_goals_table(conn):
     cursor = conn.cursor()
     try:

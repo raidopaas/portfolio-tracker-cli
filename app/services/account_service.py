@@ -145,6 +145,8 @@ def transfer(conn, account_from, account_to, amount, description_from, descripti
     
     withdraw(conn, account_from, amount, description_from)
     deposit(conn, account_to, converted_amount, description_to)
+
+    return converted_amount
     
 def get_totals(accounts, us_stocks, eu_stocks):
     totals = []

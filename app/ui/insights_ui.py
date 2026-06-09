@@ -5,6 +5,7 @@ from models.transaction import Transaction
 from datetime import datetime
 import utils.formatting as formatting
 import ui.goal_ui as goal_ui
+import services.goal_service as goal_service
 
 def insights_menu_loop(conn):
     console.clear_screen()
@@ -20,7 +21,7 @@ def insights_menu_loop(conn):
                 statistics_ui(conn)
             case "2":
                 console.clear_screen()
-                #withdraw_ui(conn)
+                view_progress(conn)
             case "3":
                 console.clear_screen()
                 goal_ui.goals_menu_loop(conn)
@@ -62,3 +63,10 @@ def print_totals(accounts, totals_month, totals_year):
         f"{formatting.format_currency(totals_month['Grand Total'], "€"):>15} "
         f"{formatting.format_currency(totals_year['Grand Total'], "€"):>15}"
     )
+
+def view_progress(conn):
+    accounts = account_service.get_cash_accounts(conn)
+    for account in accounts:
+        account_goals = goal_service.get_goals_for_account(conn, account.id)
+        for account_goal in account_goals:
+            print(account_goal)
