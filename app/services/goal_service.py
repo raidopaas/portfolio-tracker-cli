@@ -73,6 +73,10 @@ def get_goals_for_account(conn, account_id):
         account_goals.append(Goal.from_row(row))
     return account_goals
 
+def get_current_months_goal_for_account(conn, account_id):
+    today = date.today()
+    return goal_repo.get_current_months_goal_for_account(conn, account_id, today.year, today.month)
+
 def reset_goals(conn):
     try:
         goal_repo.delete_goals_table(conn)

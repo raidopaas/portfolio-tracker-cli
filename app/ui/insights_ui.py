@@ -68,5 +68,5 @@ def view_progress(conn):
     accounts = account_service.get_cash_accounts(conn)
     for account in accounts:
         account_goals = goal_service.get_goals_for_account(conn, account.id)
-        for account_goal in account_goals:
-            print(account_goal)
+        monthly_goal = goal_service.get_current_months_goal_for_account(conn, account.id)
+        print(monthly_goal)
