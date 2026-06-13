@@ -38,11 +38,12 @@ def statistics_ui(conn):
     year = datetime.now().year
     month = datetime.now().month
 
-    totals_month = transaction_service.get_totals(conn, accounts, year, month)
-    totals_year = transaction_service.get_totals(conn, accounts, year)
+    monthly_actual = transaction_service.get_totals(conn, accounts, year, month)
+    yearly_actual = transaction_service.get_totals(conn, accounts, year)
+    total_actual = transaction_service.get_totals(conn, accounts)
     
     print("Progress:\n")
-    print_totals(accounts, totals_month, totals_year)
+    print_totals(accounts, monthly_actual, yearly_actual)
 
     input("Press Enter to continue...")
     console.clear_screen()

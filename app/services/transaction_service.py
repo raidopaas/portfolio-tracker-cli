@@ -7,7 +7,7 @@ def get_transactions_for_account(conn, account_id, year, month):
     raw_data = transaction_repo.get_transactions_for_account(conn, account_id, year, month)
     return [Transaction.from_row(row) for row in raw_data]
 
-def get_totals(conn, accounts, year, month=None):
+def get_totals(conn, accounts, year=None, month=None):
     totals = {}
     grand_total = Decimal("0.00")
     rate = fx_service.get_usd_to_eur_rate() or Decimal("0.00")

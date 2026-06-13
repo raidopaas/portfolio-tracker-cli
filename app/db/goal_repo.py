@@ -45,7 +45,7 @@ def get_goals_for_account(conn, account_id):
     finally:
         cursor.close()
 
-def get_current_months_goal_for_account(conn, account_id, year, month):
+def get_monthly_goal(conn, account_id, year, month):
     cursor = conn.cursor()
     query = """
         SELECT * FROM goals WHERE 
@@ -55,6 +55,35 @@ def get_current_months_goal_for_account(conn, account_id, year, month):
         AND MONTH(deadline) = %s
     """
     values = (account_id, year, month)
+    try:
+        cursor.execute(query, values)
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+
+def get_annual_goal(conn, account_id, year):
+    cursor = conn.cursor()
+    query = """
+        SELECT * FROM goals WHERE
+        account_id = %s 
+        AND period = 'annual' 
+        AND YEAR(deadline) = %s
+    """
+    values = (account_id, year)
+    try:
+        cursor.execute(query, values)
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+
+def get_total_goal(conn, account_id):
+    cursor = conn.cursor()
+    query = """
+        SELECT * FROM goals WHERE
+        account_id = %s 
+        AND period = 'total'
+    """
+    values = (account_id,)
     try:
         cursor.execute(query, values)
         return cursor.fetchall()

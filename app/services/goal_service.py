@@ -66,6 +66,16 @@ def add_mid_goals(conn, end_target, deadline):
         annual_deadline = date(today.year + index + 1, 12, 31)
         add_goal(conn, yearly_contribution, annual_deadline, GoalScope.PORTFOLIO, GoalPeriod.ANNUAL)
 
+def get_goal(conn, account_id, period):
+    today = date.today()
+
+    if period == GoalPeriod.MONTHLY:
+        return goal_repo.get_monthly_goal(conn, account_id, today.year, today.month)
+    elif period == GoalPeriod.ANNUAL:
+        return goal_repo.get_annual_goal(conn, account_id, today.year)
+    elif period == GoalPeriod.TOTAL:
+        return goal_repo.get_total_goal(conn, account_id)
+
 def get_goals_for_account(conn, account_id):
     rows = goal_repo.get_goals_for_account(conn, account_id)
     account_goals = []
@@ -75,7 +85,7 @@ def get_goals_for_account(conn, account_id):
 
 def get_current_months_goal_for_account(conn, account_id):
     today = date.today()
-    return goal_repo.get_current_months_goal_for_account(conn, account_id, today.year, today.month)
+    return goal_repo.get_monthly_goal(conn, account_id, today.year, today.month)
 
 def reset_goals(conn):
     try:
