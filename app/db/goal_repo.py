@@ -37,14 +37,6 @@ def get_portfolio_deadline(conn):
     finally:
         cursor.close()
 
-def get_goals_for_account(conn, account_id):
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT * FROM goals WHERE account_id = %s", (account_id,))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-
 def get_monthly_goal(conn, account_id, year, month):
     cursor = conn.cursor()
     query = """
@@ -57,7 +49,7 @@ def get_monthly_goal(conn, account_id, year, month):
     values = (account_id, year, month)
     try:
         cursor.execute(query, values)
-        return cursor.fetchall()
+        return cursor.fetchone()
     finally:
         cursor.close()
 
@@ -72,7 +64,7 @@ def get_annual_goal(conn, account_id, year):
     values = (account_id, year)
     try:
         cursor.execute(query, values)
-        return cursor.fetchall()
+        return cursor.fetchone()
     finally:
         cursor.close()
 
@@ -86,7 +78,7 @@ def get_total_goal(conn, account_id):
     values = (account_id,)
     try:
         cursor.execute(query, values)
-        return cursor.fetchall()
+        return cursor.fetchone()
     finally:
         cursor.close()
 

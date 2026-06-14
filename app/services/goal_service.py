@@ -2,6 +2,7 @@ from models.goal import Goal, GoalScope, GoalPeriod
 import db.goal_repo as goal_repo
 from datetime import datetime, date
 import calendar
+from decimal import Decimal
 
 def add_goal(conn, target_amount, deadline, scope, period, account_id=None):
     goal = Goal(
@@ -70,22 +71,27 @@ def get_goal(conn, account_id, period):
     today = date.today()
 
     if period == GoalPeriod.MONTHLY:
-        return goal_repo.get_monthly_goal(conn, account_id, today.year, today.month)
+        row = goal_repo.get_monthly_goal(conn, account_id, today.year, today.month)
+        return Goal.from_row(row) if row else None
     elif period == GoalPeriod.ANNUAL:
-        return goal_repo.get_annual_goal(conn, account_id, today.year)
+        row = goal_repo.get_annual_goal(conn, account_id, today.year)
+        return Goal.from_row(row) if row else None
     elif period == GoalPeriod.TOTAL:
-        return goal_repo.get_total_goal(conn, account_id)
+        row = goal_repo.get_total_goal(conn, account_id)
+        return Goal.from_row(row) if row else None
+    
+def calculate_progress(actual, target):
+    if target == Decimal("0.00"):
+        return Decimal("0.00")
+    
+    return (actual / target) * Decimal("100")
 
-def get_goals_for_account(conn, account_id):
-    rows = goal_repo.get_goals_for_account(conn, account_id)
-    account_goals = []
-    for row in rows:
-        account_goals.append(Goal.from_row(row))
-    return account_goals
-
-def get_current_months_goal_for_account(conn, account_id):
-    today = date.today()
-    return goal_repo.get_monthly_goal(conn, account_id, today.year, today.month)
+def get_account_goals(conn, account_id):
+    return {
+        "monthly": get_goal(conn, account_id, GoalPeriod.MONTHLY),
+        "yearly": get_goal(conn, account_id, GoalPeriod.ANNUAL),
+        "total": get_goal(conn, account_id, GoalPeriod.TOTAL)
+    }
 
 def reset_goals(conn):
     try:

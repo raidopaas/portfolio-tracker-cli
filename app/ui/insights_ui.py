@@ -43,11 +43,71 @@ def statistics_ui(conn):
     total_actual = transaction_service.get_totals(conn, accounts)
     
     print("Progress:\n")
-    print_totals(accounts, monthly_actual, yearly_actual)
+    for account in accounts:
+        print_account_progress(
+            conn, 
+            account, 
+            monthly_actual,
+            yearly_actual,
+            total_actual
+            )
+    #print_totals(accounts, monthly_actual, yearly_actual)
 
     input("Press Enter to continue...")
     console.clear_screen()
 
+def print_account_progress(
+        conn,
+        account,
+        monthly_actual,
+        yearly_actual,
+        total_actual
+):
+    goals = goal_service.get_account_goals(conn, account.id)
+
+    if goals["total"] is None:
+        return
+    
+    monthly_goal = goals["monthly"]
+    yearly_goal = goals["yearly"]
+    total_goal = goals["total"]
+
+    month_progress = goal_service.calculate_progress(monthly_actual[account.name], monthly_goal.target_amount)
+    year_progress = goal_service.calculate_progress(yearly_actual[account.name], yearly_goal.target_amount)
+    total_progress = goal_service.calculate_progress(total_actual[account.name], total_goal.target_amount)
+
+    currency = "$" if account.currency == "USD" else "€"
+
+    print(f"\n{account.name}")
+
+    print(
+        f"{'Period':<8}"
+        f"{'Actual':>15}"
+        f"{'Goal':>15}"
+        f"{'Progress':>12}"
+    )
+
+    print(
+        f"{'Month':<8}"
+        f"{formatting.format_currency(monthly_actual[account.name], currency):>15}"
+        f"{formatting.format_currency(monthly_goal.target_amount, currency):>15}"
+        f"{month_progress:>11.1f}%"
+    )
+
+    print(
+        f"{'Year':<8}"
+        f"{formatting.format_currency(yearly_actual[account.name], currency):>15}"
+        f"{formatting.format_currency(yearly_goal.target_amount, currency):>15}"
+        f"{year_progress:>11.1f}%"
+    )
+
+    print(
+        f"{'Total':<8}"
+        f"{formatting.format_currency(total_actual[account.name], currency):>15}"
+        f"{formatting.format_currency(total_goal.target_amount, currency):>15}"
+        f"{total_progress:>11.1f}%"
+    )
+    
 def print_totals(accounts, totals_month, totals_year):
     print(f"{'Account':<15} {'Month':>15} {'Year':>15}")
     for account in accounts:
@@ -64,10 +124,3 @@ def print_totals(accounts, totals_month, totals_year):
         f"{formatting.format_currency(totals_month['Grand Total'], "€"):>15} "
         f"{formatting.format_currency(totals_year['Grand Total'], "€"):>15}"
     )
-
-def view_progress(conn):
-    accounts = account_service.get_cash_accounts(conn)
-    for account in accounts:
-        account_goals = goal_service.get_goals_for_account(conn, account.id)
-        monthly_goal = goal_service.get_current_months_goal_for_account(conn, account.id)
-        print(monthly_goal)
