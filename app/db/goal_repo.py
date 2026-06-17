@@ -82,6 +82,50 @@ def get_total_goal(conn, account_id):
     finally:
         cursor.close()
 
+def get_monthly_portfolio_goal(conn, year, month):
+    cursor = conn.cursor()
+    query = """
+        SELECT * FROM goals WHERE 
+        scope = 'portfolio' 
+        AND period = 'monthly' 
+        AND YEAR(deadline) = %s
+        AND MONTH(deadline) = %s
+    """
+    values = (year, month)
+    try:
+        cursor.execute(query, values)
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+
+def get_annual_portfolio_goal(conn, year):
+    cursor = conn.cursor()
+    query = """
+        SELECT * FROM goals WHERE
+        scope = 'portfolio'
+        AND period = 'annual' 
+        AND YEAR(deadline) = %s
+    """
+    values = (year,)
+    try:
+        cursor.execute(query, values)
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+
+def get_total_portfolio_goal(conn):
+    cursor = conn.cursor()
+    query = """
+        SELECT * FROM goals WHERE
+        scope = 'portfolio' 
+        AND period = 'total'
+    """
+    try:
+        cursor.execute(query)
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+
 def delete_goals_table(conn):
     cursor = conn.cursor()
     try:

@@ -80,6 +80,19 @@ def get_goal(conn, account_id, period):
         row = goal_repo.get_total_goal(conn, account_id)
         return Goal.from_row(row) if row else None
     
+def get_portfolio_goal(conn, period):
+    today = date.today()
+
+    if period == GoalPeriod.MONTHLY:
+        row = goal_repo.get_monthly_portfolio_goal(conn, today.year, today.month)
+        return Goal.from_row(row) if row else None
+    elif period == GoalPeriod.ANNUAL:
+        row = goal_repo.get_annual_portfolio_goal(conn, today.year)
+        return Goal.from_row(row) if row else None
+    elif period == GoalPeriod.TOTAL:
+        row = goal_repo.get_total_portfolio_goal(conn)
+        return Goal.from_row(row) if row else None
+    
 def calculate_progress(actual, target):
     if target == Decimal("0.00"):
         return Decimal("0.00")
@@ -91,6 +104,13 @@ def get_account_goals(conn, account_id):
         "monthly": get_goal(conn, account_id, GoalPeriod.MONTHLY),
         "yearly": get_goal(conn, account_id, GoalPeriod.ANNUAL),
         "total": get_goal(conn, account_id, GoalPeriod.TOTAL)
+    }
+
+def get_portfolio_goals(conn):
+    return {
+        "monthly": get_portfolio_goal(conn, GoalPeriod.MONTHLY),
+        "yearly": get_portfolio_goal(conn, GoalPeriod.ANNUAL),
+        "total": get_portfolio_goal(conn, GoalPeriod.TOTAL)
     }
 
 def reset_goals(conn):
