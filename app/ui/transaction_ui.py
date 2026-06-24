@@ -61,9 +61,13 @@ def deposit_ui(conn):
         return
     
     try:
+        increase = account_service.get_deposit_goal_impact(conn, account, amount)
         account_service.deposit(conn, account, amount, description)
         console.clear_screen()
         print(f"Deposit successful, {formatting.format_currency(amount, account.currency)} deposited to account {account.name}.")
+        if increase:
+            print(f"Increase of {increase[0]:.2f}% towards account's end goal.")
+            print(f"Increase of {increase[1]:.2f}% towards portfolio's end goal.")
     except Exception as e:
         console.clear_screen()
         print(e)
