@@ -4,7 +4,7 @@ import services.transaction_service as transaction_service
 from models.transaction import Transaction
 from datetime import datetime
 import utils.formatting as formatting
-import app.services.insight_service as insight_service
+import services.goal_service as goal_service
 from decimal import Decimal
 from models.goal import Goal, GoalScope, GoalPeriod
 
@@ -62,30 +62,34 @@ def print_progress(
         account=None
 ):
     if account:
-        goals = insight_service.get_account_goals(conn, account.id)
+        goals = goal_service.get_account_goals(conn, account.id)
         name = account.name
         currency = "$" if account.currency == "USD" else "€"
+        month_goal_amount = goal_service.get_adjusted_monthly(conn, account)
+        year_goal_amount = goal_service.get_adjusted_yearly(conn, account)
     else:
-        goals = insight_service.get_portfolio_goals(conn)
+        goals = goal_service.get_portfolio_goals(conn)
         name = "Grand Total"
         currency = "€"
+        month_goal_amount = goal_service.get_adjusted_monthly(conn)
+        year_goal_amount = goal_service.get_adjusted_yearly(conn)
 
-    monthly_goal = goals["monthly"]
-    yearly_goal = goals["yearly"]
+    #monthly_goal = goals["monthly"]
+    #yearly_goal = goals["yearly"]
     total_goal = goals["total"]
 
-    month_goal_amount = monthly_goal.target_amount if monthly_goal else None
-    year_goal_amount = yearly_goal.target_amount if yearly_goal else None
+    #month_goal_amount = monthly_goal if monthly_goal else None
+    #year_goal_amount = yearly_goal if yearly_goal else None
     total_goal_amount = total_goal.target_amount if total_goal else None
 
-    month_progress = insight_service.calculate_progress(monthly_actual[name], month_goal_amount) if month_goal_amount else None
-    year_progress = insight_service.calculate_progress(yearly_actual[name], year_goal_amount) if year_goal_amount else None
-    total_progress = insight_service.calculate_progress(total_actual[name], total_goal_amount) if total_goal_amount else None
+    month_progress = goal_service.calculate_progress(monthly_actual[name], month_goal_amount) if month_goal_amount else None
+    year_progress = goal_service.calculate_progress(yearly_actual[name], year_goal_amount) if year_goal_amount else None
+    total_progress = goal_service.calculate_progress(total_actual[name], total_goal_amount) if total_goal_amount else None
 
-    month_goal_text = formatting.format_currency(month_goal_amount, currency) if monthly_goal else "-"
-    month_progress_text = f"{month_progress:.1f}%" if monthly_goal else "-"
-    year_goal_text = formatting.format_currency(year_goal_amount, currency) if yearly_goal else "-"
-    year_progress_text = f"{year_progress:.1f}%" if yearly_goal else "-"
+    month_goal_text = formatting.format_currency(month_goal_amount, currency) if month_goal_amount else "-"
+    month_progress_text = f"{month_progress:.1f}%" if year_goal_amount else "-"
+    year_goal_text = formatting.format_currency(year_goal_amount, currency) if year_goal_amount else "-"
+    year_progress_text = f"{year_progress:.1f}%" if year_goal_amount else "-"
     total_goal_text = formatting.format_currency(total_goal_amount, currency) if total_goal else "-"
     total_progress_text = f"{total_progress:.1f}%" if total_goal else "-"
 
@@ -137,7 +141,7 @@ def print_totals(accounts, totals_month, totals_year):
     )
 
 def add_goal_ui(conn):
-    if insight_service.has_portfolio_goal(conn):
+    if goal_service.has_portfolio_goal(conn):
         print("Goals have already been set.")
         response = input("Would you like to overwrite these? (Y/N): ").capitalize()
         if response != "Y":
@@ -145,11 +149,11 @@ def add_goal_ui(conn):
             return
 
     console.clear_screen()
-    insight_service.reset_goals(conn)
+    goal_service.reset_goals(conn)
     deadline_year_input = input("Enter year of the portfolio deadline: ")
     deadline_month_input = input("Enter month of the portfolio deadline (1-12): ")
     try:
-        deadline = insight_service.validate_deadline(deadline_month_input, deadline_year_input)
+        deadline = goal_service.validate_deadline(deadline_month_input, deadline_year_input)
     except ValueError as e:
         console.clear_screen()
         print(e)
@@ -169,8 +173,8 @@ def add_goal_ui(conn):
             print("Invalid input")
             return
         try:
-            insight_service.add_account_goal(conn, target_amount, GoalPeriod.TOTAL, account.id, deadline)
-            insight_service.add_mid_goals(conn, target_amount, deadline, GoalScope.ACCOUNT, account.id)
+            goal_service.add_account_goal(conn, target_amount, GoalPeriod.TOTAL, account.id, deadline)
+            goal_service.add_mid_goals(conn, target_amount, deadline, GoalScope.ACCOUNT, account.id)
             console.clear_screen()
             print(f"Account {account.name} goals added succesfully.")
         except Exception as e:
@@ -179,8 +183,8 @@ def add_goal_ui(conn):
             return
         
     try:
-        insight_service.add_portfolio_goal(conn, end_target, GoalPeriod.TOTAL, deadline)
-        insight_service.add_mid_goals(conn, end_target, deadline, GoalScope.PORTFOLIO)
+        goal_service.add_portfolio_goal(conn, end_target, GoalPeriod.TOTAL, deadline)
+        goal_service.add_mid_goals(conn, end_target, deadline, GoalScope.PORTFOLIO)
         console.clear_screen()
         print(f"Portfolio goal {end_target}€, {deadline} added succesfully.")
     except Exception as e:

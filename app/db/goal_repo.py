@@ -4,12 +4,13 @@ def add_goal(conn, goal):
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO goals (target_amount, deadline, scope, period, account_id)
-    VALUES (%s, %s, %s, %s, %s)
+    INSERT INTO goals (target_amount, start_date, deadline, scope, period, account_id)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     values = (
         goal.target_amount,
+        goal.start_date,
         goal.deadline,
         goal.scope.value,
         goal.period.value,
@@ -33,6 +34,14 @@ def get_portfolio_deadline(conn):
     cursor = conn.cursor()
     try:
         cursor.execute("SELECT deadline FROM goals WHERE scope = 'portfolio' AND period = 'total'")
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+
+def get_portfolio_start_date(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT start_date FROM goals WHERE scope = 'portfolio' AND period = 'total'")
         return cursor.fetchone()[0]
     finally:
         cursor.close()

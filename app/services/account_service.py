@@ -7,7 +7,7 @@ from models.transaction import Transaction
 import api.fx_api as fx_api
 import services.fx_service as fx_service
 import services.stock_service as stock_service
-import app.services.insight_service as insight_service
+import services.goal_service as goal_service
 from models.goal import Goal, GoalScope, GoalPeriod
 
 def add_account(conn, name, account_type, currency):
@@ -197,8 +197,8 @@ def get_totals(accounts, us_stocks, eu_stocks):
     return totals
 
 def get_deposit_goal_impact(conn, account, amount):
-    account_total_goal = insight_service.get_goal(conn, account.id, GoalPeriod.TOTAL)
-    portfolio_total_goal = insight_service.get_portfolio_goal(conn, GoalPeriod.TOTAL)
+    account_total_goal = goal_service.get_goal(conn, account.id, GoalPeriod.TOTAL)
+    portfolio_total_goal = goal_service.get_portfolio_goal(conn, GoalPeriod.TOTAL)
     if account_total_goal is None or portfolio_total_goal is None:
         return None
     account_total_increase = amount / account_total_goal.target_amount * Decimal("100")

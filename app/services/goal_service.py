@@ -3,11 +3,13 @@ import db.goal_repo as goal_repo
 from datetime import datetime, date
 import calendar
 from decimal import Decimal
+import services.account_service as account_service
 
-def add_goal(conn, target_amount, scope, period, account_id=None, deadline=None):
+def add_goal(conn, target_amount, scope, period, account_id=None, deadline=None, start_date=None):
     goal = Goal(
         id=None, 
-        target_amount=target_amount, 
+        target_amount=target_amount,
+        start_date=start_date,
         deadline=deadline, 
         scope=scope, 
         period=period, 
@@ -25,13 +27,17 @@ def add_account_goal(conn, target_amount, period, account_id, deadline=None):
     add_goal(conn, target_amount, GoalScope.ACCOUNT, period, account_id, deadline)
 
 def add_portfolio_goal(conn, target_amount, period, deadline=None):
-    add_goal(conn, target_amount, GoalScope.PORTFOLIO, period, account_id=None, deadline=deadline)
+    today = date.today()
+    add_goal(conn, target_amount, GoalScope.PORTFOLIO, period, account_id=None, deadline=deadline, start_date=today)
 
 def has_portfolio_goal(conn):
     return goal_repo.has_portfolio_goal(conn)
 
 def get_portfolio_deadline(conn):
     return goal_repo.get_portfolio_deadline(conn)
+
+def get_portfolio_start_date(conn):
+    return goal_repo.get_portfolio_start_date(conn)
 
 def validate_deadline(month, year):
     month = int(month)
@@ -55,6 +61,49 @@ def validate_deadline(month, year):
 
 def calculate_total_months(start_date, end_date):
     return (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month) + 1
+
+def get_adjusted_monthly(conn, account=None):
+    today = date.today()
+
+    if account:
+        goal = get_goal(conn, account.id, GoalPeriod.TOTAL)
+    else:
+        goal = get_portfolio_goal(conn, GoalPeriod.TOTAL)
+
+    if not goal:
+        return None
+
+    if account:
+        actual = account.balance
+    else:
+        accounts = account_service.get_cash_accounts(conn)
+        actual = Decimal("0.00")
+        for acc in accounts:
+            actual += acc.balance
+
+    months_remaining = calculate_total_months(today, goal.deadline)
+
+    if months_remaining <= 0:
+        return 0
+    
+    remaining = goal.target_amount - actual
+
+    return remaining / months_remaining
+
+def get_adjusted_yearly(conn, account=None):
+    today = date.today()
+    adjusted_monthly = get_adjusted_monthly(conn, account)
+    start_date = get_portfolio_start_date(conn)
+    deadline = get_portfolio_deadline(conn)
+
+    if deadline.year == today.year:
+        months = deadline.month
+    elif start_date.year == today.year:
+        months = 12 - start_date.month + 1
+    else:
+        months = 12
+
+    return months * adjusted_monthly
 
 def add_mid_goals(conn, end_target, deadline, scope, account_id=None):
     if scope == GoalScope.ACCOUNT and not account_id:

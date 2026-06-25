@@ -13,7 +13,8 @@ class Goal:
     def __init__(
             self, 
             id, 
-            target_amount, 
+            target_amount,
+            start_date, 
             deadline, 
             scope: GoalScope, 
             period: GoalPeriod, 
@@ -21,6 +22,7 @@ class Goal:
     ):
         self.id = id
         self.target_amount = target_amount
+        self.start_date = start_date
         self.deadline = deadline
         self.scope = scope
         self.period = period
@@ -43,8 +45,9 @@ class Goal:
         return cls(
             id = row[0],
             target_amount = row[1],
-            deadline = row[2],
-            scope = GoalScope(row[3]),
-            period = GoalPeriod(row[4]),
-            account_id = row[5]
+            start_date = row[2],
+            deadline = row[3],
+            scope = GoalScope(row[4]),
+            period = GoalPeriod(row[5]),
+            account_id = row[6]
         )

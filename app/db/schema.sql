@@ -36,6 +36,7 @@ CREATE TABLE stocks (
 CREATE TABLE goals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     target_amount DECIMAL(10,2) NOT NULL,
+    start_date DATE,
     deadline DATE,
     scope ENUM("portfolio", "account") NOT NULL,
     period ENUM("total", "annual", "monthly") NOT NULL,
