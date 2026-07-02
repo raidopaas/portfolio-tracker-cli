@@ -40,6 +40,10 @@ def statistics_ui(conn):
     yearly_actual = transaction_service.get_totals(conn, accounts, year)
     total_actual = transaction_service.get_totals(conn, accounts)
 
+    deadline = goal_service.get_portfolio_deadline(conn)
+
+    print(f"\nDeadline is {deadline}")
+
     for account in accounts:
         print_progress(
             conn,
@@ -65,14 +69,16 @@ def print_progress(
         goals = goal_service.get_account_goals(conn, account.id)
         name = account.name
         currency = "$" if account.currency == "USD" else "€"
-        month_goal_amount = goal_service.get_adjusted_monthly(conn, account)
+        #monthly_proxy = goal_service.get_adjusted_monthly_proxy(conn, account)
         year_goal_amount = goal_service.get_adjusted_yearly(conn, account)
+        month_goal_amount = goal_service.get_adjusted_monthly(conn, year_goal_amount, account)
     else:
         goals = goal_service.get_portfolio_goals(conn)
         name = "Grand Total"
         currency = "€"
-        month_goal_amount = goal_service.get_adjusted_monthly(conn)
+        #month_goal_amount = goal_service.get_adjusted_monthly_proxy(conn)
         year_goal_amount = goal_service.get_adjusted_yearly(conn)
+        month_goal_amount = goal_service.get_adjusted_monthly(conn, year_goal_amount)
 
     #monthly_goal = goals["monthly"]
     #yearly_goal = goals["yearly"]
@@ -174,7 +180,7 @@ def add_goal_ui(conn):
             return
         try:
             goal_service.add_account_goal(conn, target_amount, GoalPeriod.TOTAL, account.id, deadline)
-            goal_service.add_mid_goals(conn, target_amount, deadline, GoalScope.ACCOUNT, account.id)
+            #goal_service.add_mid_goals(conn, target_amount, deadline, GoalScope.ACCOUNT, account.id)
             console.clear_screen()
             print(f"Account {account.name} goals added succesfully.")
         except Exception as e:
@@ -184,7 +190,7 @@ def add_goal_ui(conn):
         
     try:
         goal_service.add_portfolio_goal(conn, end_target, GoalPeriod.TOTAL, deadline)
-        goal_service.add_mid_goals(conn, end_target, deadline, GoalScope.PORTFOLIO)
+        #goal_service.add_mid_goals(conn, end_target, deadline, GoalScope.PORTFOLIO)
         console.clear_screen()
         print(f"Portfolio goal {end_target}€, {deadline} added succesfully.")
     except Exception as e:

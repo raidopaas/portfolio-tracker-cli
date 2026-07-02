@@ -1,6 +1,7 @@
 import utils.console as console
 import services.account_service as account_service
 import services.stock_service as stock_service
+import services.fx_service as fx_service
 import ui.helpers as helpers
 
 def add_account_ui(conn):
@@ -86,10 +87,13 @@ def view_balances(conn):
         return
     
     us_stocks_value = stock_service.get_total_value(us_stocks)
+    rate = fx_service.get_usd_to_eur_rate()
+    us_stocks_value_in_eur = fx_service.usd_to_eur(us_stocks_value, rate)
+
     eu_stocks_value = stock_service.get_total_value(eu_stocks)
     
     try:
-        data = account_service.get_totals(accounts, us_stocks_value, eu_stocks_value)
+        data = account_service.get_totals(accounts, us_stocks_value, eu_stocks_value, rate)
     except Exception as e:
         console.clear_screen()
         print("Failed to load balances:", e)
@@ -112,7 +116,7 @@ def view_balances(conn):
     print("Stock Assets:")
     
     print(f"{'EUR Value:' :<20} {eu_stocks_value:>12.2f} €")
-    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $")
+    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $ ({us_stocks_value_in_eur:>.2f} €)")
 
     input("Press enter to continue...")
     console.clear_screen()

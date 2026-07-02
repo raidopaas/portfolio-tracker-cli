@@ -150,7 +150,7 @@ def transfer(conn, account_from, account_to, amount, description_from, descripti
 
     return converted_amount
     
-def get_totals(accounts, us_stocks, eu_stocks):
+def get_totals(accounts, us_stocks, eu_stocks, rate):
     totals = []
 
     us_broker_account = next((acc for acc in accounts if acc.account_type == "broker" and acc.currency == "USD"), None)
@@ -177,8 +177,6 @@ def get_totals(accounts, us_stocks, eu_stocks):
 
     total_eur += total_eur_broker
     total_usd += total_usd_broker
-
-    rate = fx_api.get_usdeur()
 
     if rate is None:
         total_usd_eur = None

@@ -267,6 +267,7 @@ def view_transactions(conn):
 
     try:
         transactions = transaction_service.get_transactions_for_account(conn, account.id, year, month)
+        total_balance = transaction_service.get_account_total(conn, account.id, year, month)
     except ValueError as e:
         console.clear_screen()
         print(e)
@@ -274,6 +275,7 @@ def view_transactions(conn):
 
     if transactions:
         console.clear_screen()
+        print(f"Period's total: {total_balance}")
         print_transactions(account.name, transactions)
         input("Press Enter to continue...")
         console.clear_screen()

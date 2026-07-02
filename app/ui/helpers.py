@@ -17,12 +17,12 @@ def select_account(conn, transaction, exclude_account=None):
     print_account_list(accounts)
     
     try:
-        id_input = int(input(f"Enter account number for {transaction}: "))
+        id_input = int(input(f"Enter number for {transaction}: "))
     except Exception:
         raise ValueError("Invalid input. Transaction cancelled.")
 
     if id_input < 1 or id_input > len(accounts):
-        raise ValueError("Invalid account number. Transaction cancelled.")
+        raise ValueError("Invalid input. Transaction cancelled.")
         
     return accounts[id_input - 1]
 
