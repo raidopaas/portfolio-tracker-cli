@@ -1,8 +1,9 @@
 import utils.console as console
 import services.account_service as account_service
 import services.stock_service as stock_service
-import services.fx_service as fx_service
+import services.goal_service as goal_service
 import ui.helpers as helpers
+import utils.formatting as formatting
 
 def add_account_ui(conn):
     type_map = {
@@ -60,11 +61,13 @@ def remove_account_ui(conn):
         return
    
     console.clear_screen()
+    print("Removing account will also reset the current goals.")
     confirmation = input(f"Confirm removal of account {account.name} (Y/N): ").upper()
 
     if confirmation == "Y":   
         try:
             account_service.remove_account(conn, account.id)
+            goal_service.reset_goals(conn)
             console.clear_screen()
             print(f"Account {account.name} removed successfully.")
         except Exception as e:
@@ -87,13 +90,12 @@ def view_balances(conn):
         return
     
     us_stocks_value = stock_service.get_total_value(us_stocks)
-    rate = fx_service.get_usd_to_eur_rate()
-    us_stocks_value_in_eur = fx_service.usd_to_eur(us_stocks_value, rate)
-
     eu_stocks_value = stock_service.get_total_value(eu_stocks)
+       
+    us_stocks_value_in_eur = account_service.get_eur_value(us_stocks_value)
     
     try:
-        data = account_service.get_totals(accounts, us_stocks_value, eu_stocks_value, rate)
+        data = account_service.get_totals(accounts, us_stocks_value, eu_stocks_value)
     except Exception as e:
         console.clear_screen()
         print("Failed to load balances:", e)
@@ -102,21 +104,25 @@ def view_balances(conn):
     if data["total_usd_eur"] is None:
         print("Could not retrieve USD data.")
     else:
-        print(f"{'EUR Assets:':<20} {data['total_eur']:>12.2f} €")
-        print(f"{'USD Assets:':<20} {data['total_usd']:>12.2f} $ ({data['total_usd_eur']:>.2f} €)")
-        print(f"{'Total Assets:':<20} {data['grand_total']:>12.2f} €")
+        print(f"{'EUR Assets:':<20} {formatting.format_currency(data['total_eur'], "€"):>15} ")
+        print(f"{'USD Assets:':<20} {formatting.format_currency(data['total_usd'], "$"):>15} ({formatting.format_currency(data['total_usd_eur'], "€"):>10})")
+        print(f"{'Total Assets:':<20} {formatting.format_currency(data['grand_total'], "€"):>15}")
 
     print("")
     print("Cash Assets:")
 
     for account in accounts:
-        print(account)
+        print(account_service.format_account(account))
 
     print("")
     print("Stock Assets:")
     
-    print(f"{'EUR Value:' :<20} {eu_stocks_value:>12.2f} €")
-    print(f"{'USD Value:' :<20} {us_stocks_value:>12.2f} $ ({us_stocks_value_in_eur:>.2f} €)")
+    print(f"{'EUR Value:' :<20} {formatting.format_currency(eu_stocks_value, "€"):>15}")
+    
+    if us_stocks_value_in_eur:
+        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15} ({formatting.format_currency(us_stocks_value_in_eur, "€"):>10})")
+    else:
+        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15}")
 
     input("Press enter to continue...")
     console.clear_screen()

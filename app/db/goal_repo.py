@@ -119,6 +119,7 @@ def get_annual_portfolio_goal(conn, year):
 
 def get_total_portfolio_goal(conn):
     cursor = conn.cursor()
+
     query = """
         SELECT * FROM goals WHERE
         scope = 'portfolio' 
@@ -127,6 +128,17 @@ def get_total_portfolio_goal(conn):
     try:
         cursor.execute(query)
         return cursor.fetchone()
+    finally:
+        cursor.close()
+
+def update_portfolio_goal(conn, target_amount):
+    cursor = conn.cursor()
+    query = """
+        UPDATE goals SET target_amount = %s WHERE scope = 'portfolio' AND period = 'total'
+    """
+    values = (target_amount,)
+    try:
+        cursor.execute(query, values)
     finally:
         cursor.close()
 

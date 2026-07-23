@@ -27,4 +27,6 @@ def get_usd_to_eur_rate():
         _cached_time = now
         return rate
     except Exception:
-        return _cached_rate
+        if _cached_rate is not None:
+            return _cached_rate
+        raise

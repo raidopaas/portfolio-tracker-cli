@@ -1,4 +1,6 @@
 import utils.constants as constants
+import utils.formatting as formatting
+import services.account_service as account_service
 
 class Account:
     def __init__(self, id, name, account_type, balance, currency):
@@ -7,13 +9,6 @@ class Account:
         self.account_type = account_type
         self.balance = balance
         self.currency = currency
-
-    def __str__(self):
-        currency = constants.CURRENCIES[self.currency]
-
-        return (
-                f"{(self.name + ':'):<20} {self.balance:>12.2f} {currency}"
-            )
 
     @classmethod
     def from_row(cls, row):
