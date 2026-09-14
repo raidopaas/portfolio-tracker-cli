@@ -75,12 +75,14 @@ def get_adjusted_monthly_proxy(conn, account=None):
         return None
 
     if account:
-        actual = account.balance
+        monthly_change = transaction_service.get_account_monthly_change(conn, account.id, today.year, today.month)
+        actual = account.balance - monthly_change
     else:
         accounts = account_service.get_cash_accounts(conn)
         actual = Decimal("0.00")
         for acc in accounts:
-            actual += acc.balance
+            monthly_change = transaction_service.get_account_monthly_change(conn, acc.id, today.year, today.month)
+            actual += (acc.balance - monthly_change)
 
     months_remaining = calculate_total_months(today, goal.deadline)
 
