@@ -2,7 +2,7 @@ import utils.console as console
 import services.account_service as account_service
 import services.transaction_service as transaction_service
 from models.transaction import Transaction
-from datetime import datetime
+from datetime import datetime, date
 import utils.formatting as formatting
 import services.goal_service as goal_service
 from decimal import Decimal
@@ -29,6 +29,46 @@ def insights_menu_loop(conn):
                 console.clear_screen()
                 print("Incorrect input. Please enter a number between 0 and 3.")
                 continue
+
+def add_goals_ui(conn):
+    if goal_service.has_portfolio_goal(conn):
+        print("Goals have already been set.")
+        response = input("Would you like to overwrite these? (Y/N): ").capitalize()
+        if response != "Y":
+            console.clear_screen()
+            return
+
+    console.clear_screen()
+    start_date = date.today()
+    deadline_year_input = input("Enter year of the portfolio deadline: ")
+    deadline_month_input = input("Enter month of the portfolio deadline (1-12): ")
+    try:
+        deadline = goal_service.validate_deadline(deadline_month_input, deadline_year_input, start_date)
+    except ValueError as e:
+        console.clear_screen()
+        print(e)
+        return
+
+    accounts = account_service.get_cash_accounts(conn)
+    account_goals = []
+
+    for account in accounts:
+        currency = "$" if account.currency == "USD" else "€"
+
+        try:
+            target_amount = Decimal(input(f"Enter target amount for account {account.name} ({currency}): "))
+        except Exception:
+            console.clear_screen()
+            print("Invalid input")
+            return
+        account_goals.append({"account_id": account.id, "target": target_amount})
+
+    try:
+        goal_service.add_goals(conn, account_goals, start_date, deadline)
+        console.clear_screen()
+        print("Goals were added successfully!")
+    except Exception as e:
+        print(e)
 
 def statistics_ui(conn):
     
@@ -72,46 +112,34 @@ def print_progress(
         yearly_actual,
         total_actual,
         account=None
-):
+    ):
+
     if account:
-        goal = goal_service.get_goal(conn, account.id, GoalPeriod.TOTAL)
-        #goals = goal_service.get_account_goals(conn, account.id)
+        total_target = goal_service.get_goal(conn, GoalPeriod.TOTAL, account.id).target_amount
+        annual_target = goal_service.get_goal(conn, GoalPeriod.ANNUAL, account.id).target_amount
+        monthly_target = goal_service.get_goal(conn, GoalPeriod.MONTHLY, account.id).target_amount
+
         name = account.name
         currency = "$" if account.currency == "USD" else "€"
 
-        if goal:
-            year_goal_amount = goal_service.get_adjusted_yearly(conn, account)
-            month_goal_amount = goal_service.get_adjusted_monthly(conn, year_goal_amount, account)
-            total_goal = goal
-            total_goal_amount = total_goal.target_amount
-        else:
-            year_goal_amount = None
-            month_goal_amount = None
-            total_goal = None
-            total_goal_amount = None
     else:
-        goals = goal_service.get_portfolio_goals(conn)
+        total_target = goal_service.get_goal(conn, GoalPeriod.TOTAL).target_amount
+        annual_target = goal_service.get_goal(conn, GoalPeriod.ANNUAL).target_amount
+        monthly_target = goal_service.get_goal(conn, GoalPeriod.MONTHLY).target_amount
+
         name = "Grand Total"
         currency = "€"
-        year_goal_amount = goal_service.get_adjusted_yearly(conn)
-        month_goal_amount = goal_service.get_adjusted_monthly(conn, year_goal_amount)
-        total_goal = goals["total"]
-        total_goal_amount = total_goal.target_amount
 
-    #total_goal = goals["total"]
+    month_progress = goal_service.calculate_progress(monthly_actual[name], monthly_target) if monthly_target else None
+    year_progress = goal_service.calculate_progress(yearly_actual[name], annual_target) if annual_target else None
+    total_progress = goal_service.calculate_progress(total_actual[name], total_target) if total_target else None
 
-    #total_goal_amount = total_goal.target_amount if total_goal else None
-
-    month_progress = goal_service.calculate_progress(monthly_actual[name], month_goal_amount) if month_goal_amount else None
-    year_progress = goal_service.calculate_progress(yearly_actual[name], year_goal_amount) if year_goal_amount else None
-    total_progress = goal_service.calculate_progress(total_actual[name], total_goal_amount) if total_goal_amount else None
-
-    month_goal_text = formatting.format_currency(month_goal_amount, currency) if month_goal_amount else "-"
-    month_progress_text = f"{month_progress:.1f}%" if month_goal_amount else "-"
-    year_goal_text = formatting.format_currency(year_goal_amount, currency) if year_goal_amount else "-"
-    year_progress_text = f"{year_progress:.1f}%" if year_goal_amount else "-"
-    total_goal_text = formatting.format_currency(total_goal_amount, currency) if total_goal else "-"
-    total_progress_text = f"{total_progress:.1f}%" if total_goal else "-"
+    month_goal_text = formatting.format_currency(monthly_target, currency) if monthly_target else "-"
+    month_progress_text = f"{month_progress:.1f}%" if monthly_target else "-"
+    year_goal_text = formatting.format_currency(annual_target, currency) if annual_target else "-"
+    year_progress_text = f"{year_progress:.1f}%" if annual_target else "-"
+    total_goal_text = formatting.format_currency(total_target, currency) if total_target else "-"
+    total_progress_text = f"{total_progress:.1f}%" if total_target else "-"
 
     print(f"\n{name}")
 
@@ -159,87 +187,3 @@ def print_totals(accounts, totals_month, totals_year):
         f"{formatting.format_currency(totals_month['Grand Total'], "€"):>15} "
         f"{formatting.format_currency(totals_year['Grand Total'], "€"):>15}"
     )
-
-def add_goals_ui(conn):
-    if goal_service.has_portfolio_goal(conn):
-        print("Goals have already been set.")
-        response = input("Would you like to overwrite these? (Y/N): ").capitalize()
-        if response != "Y":
-            console.clear_screen()
-            return
-
-    console.clear_screen()
-    goal_service.reset_goals(conn)
-    deadline_year_input = input("Enter year of the portfolio deadline: ")
-    deadline_month_input = input("Enter month of the portfolio deadline (1-12): ")
-    try:
-        deadline = goal_service.validate_deadline(deadline_month_input, deadline_year_input)
-    except ValueError as e:
-        console.clear_screen()
-        print(e)
-        return
-
-    accounts = account_service.get_cash_accounts(conn)
-    end_target = Decimal("0.00")
-
-    for account in accounts:
-        currency = "$" if account.currency == "USD" else "€"
-
-        try:
-            target_amount = Decimal(input(f"Enter target amount for account {account.name} ({currency}): "))
-            end_target += target_amount
-        except Exception:
-            console.clear_screen()
-            print("Invalid input")
-            return
-        try:
-            goal_service.add_account_goal(conn, target_amount, GoalPeriod.TOTAL, account.id, deadline)
-            console.clear_screen()
-            print(f"Account {account.name} goals added succesfully.")
-        except Exception as e:
-            console.clear_screen()
-            print("Adding goals failed", e)
-            return
-        
-    try:
-        goal_service.add_portfolio_goal(conn, end_target, GoalPeriod.TOTAL, deadline)
-        console.clear_screen()
-        print(f"Portfolio goal {end_target}€, {deadline} added succesfully.")
-    except Exception as e:
-        console.clear_screen()
-        print("Adding new goal failed", e)
-        return
-    
-def add_account_goal_ui(conn, account, end_target=None, deadline=None):
-    currency = "$" if account.currency == "USD" else "€"
-
-    if not end_target:
-        goal = goal_service.get_portfolio_goal(conn, GoalPeriod.TOTAL)
-        end_target = goal.target_amount
-    if not deadline:
-        deadline = goal_service.get_portfolio_deadline(conn)
-
-    try:
-        target_amount = Decimal(input(f"Enter target amount for account {account.name} ({currency}): "))
-        end_target += target_amount
-    except Exception:
-        console.clear_screen()
-        print("Invalid input")
-        return
-    try:
-        goal_service.add_account_goal(conn, target_amount, GoalPeriod.TOTAL, account.id, deadline)
-        console.clear_screen()
-        print(f"Account {account.name} goals added succesfully.")
-    except Exception as e:
-        console.clear_screen()
-        print("Adding goals failed", e)
-        return
-    
-    try:
-        goal_service.update_portfolio_goal(conn, end_target)
-        console.clear_screen()
-        print(f"Portfolio goal {end_target}€, updated succesfully.")
-    except Exception as e:
-        console.clear_screen()
-        print("Adding new goal failed", e)
-        return
