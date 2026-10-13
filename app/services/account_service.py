@@ -7,7 +7,7 @@ from models.transaction import Transaction
 import api.fx_api as fx_api
 import services.fx_service as fx_service
 import services.stock_service as stock_service
-from utils import constants, formatting
+from utils import constants, formatting, calculations
 
 def add_account(conn, name, account_type, currency):
     account = Account(
@@ -207,23 +207,22 @@ def get_totals(accounts, us_stocks_value, eu_stocks_value):
 
     return totals
 
-def format_account(account):
+def format_account(account, portfolio_total):
     currency = constants.CURRENCIES[account.currency]
+
+    balance_in_eur = account.balance if currency == "€" else get_eur_value(account.balance)
+
+    allocation = calculations.calculate_allocation(balance_in_eur, portfolio_total)
+
+    percentage = f"{allocation:6.2f}%" if allocation is not None else "   N/A"
 
     if currency == "€":
         return (
-                f"{(account.name + ':'):<20} {formatting.format_currency(account.balance, currency):>15}"
-            )
-
-    balance_in_eur = get_eur_value(account.balance)
-
-    if balance_in_eur is None:
-        return (
-            f"{(account.name + ':'):<20} {formatting.format_currency(account.balance, currency):>15}"
+            f"{(account.name + ':'):<20} {formatting.format_currency(account.balance, currency):>15} {'':>12} {percentage:>8}"
         )
 
     return (
-        f"{(account.name + ':'):<20} {formatting.format_currency(account.balance, currency):>15} ({formatting.format_currency(balance_in_eur, "€"):>10})"
+        f"{(account.name + ':'):<20} {formatting.format_currency(account.balance, currency):>15} ({formatting.format_currency(balance_in_eur, "€"):>10}) {percentage:>8}"
     )
     
 

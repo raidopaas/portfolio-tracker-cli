@@ -3,7 +3,7 @@ import services.account_service as account_service
 import services.stock_service as stock_service
 import services.goal_service as goal_service
 import ui.helpers as helpers
-import utils.formatting as formatting
+from utils import formatting, calculations
 
 def add_account_ui(conn):
     type_map = {
@@ -102,27 +102,39 @@ def view_balances(conn):
         return
 
     if data["total_usd_eur"] is None:
+        portfolio_total = 0
+        eu_stocks_allocation = None
+        us_stocks_allocation = None
+        percentage_eu = "   N/A"
+        percentage_us = "   N/A"
+
         print("Could not retrieve USD data.")
     else:
+        portfolio_total = data['grand_total']
+        eu_stocks_allocation = calculations.calculate_allocation(eu_stocks_value, portfolio_total)
+        us_stocks_allocation = calculations.calculate_allocation(us_stocks_value_in_eur, portfolio_total)
+        percentage_eu = f"{eu_stocks_allocation:6.2f}%"
+        percentage_us = f"{us_stocks_allocation:6.2f}%"
+
         print(f"{'EUR Assets:':<20} {formatting.format_currency(data['total_eur'], "€"):>15} ")
         print(f"{'USD Assets:':<20} {formatting.format_currency(data['total_usd'], "$"):>15} ({formatting.format_currency(data['total_usd_eur'], "€"):>10})")
-        print(f"{'Total Assets:':<20} {formatting.format_currency(data['grand_total'], "€"):>15}")
+        print(f"{'Total Assets:':<20} {formatting.format_currency(portfolio_total, "€"):>15}")
 
     print("")
     print("Cash Assets:")
 
     for account in accounts:
-        print(account_service.format_account(account))
+        print(account_service.format_account(account, portfolio_total))
 
     print("")
     print("Stock Assets:")
     
-    print(f"{'EUR Value:' :<20} {formatting.format_currency(eu_stocks_value, "€"):>15}")
+    print(f"{'EUR Value:' :<20} {formatting.format_currency(eu_stocks_value, "€"):>15} {'':>12} {percentage_eu:>8}")
     
     if us_stocks_value_in_eur:
-        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15} ({formatting.format_currency(us_stocks_value_in_eur, "€"):>10})")
+        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15} ({formatting.format_currency(us_stocks_value_in_eur, "€"):>10}) {percentage_us:>8}")
     else:
-        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15}")
+        print(f"{'USD Value:' :<20} {formatting.format_currency(us_stocks_value, "$"):>15} {'':>12} {"   N/A"}")
 
     input("Press enter to continue...")
     console.clear_screen()

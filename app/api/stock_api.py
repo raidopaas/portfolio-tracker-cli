@@ -25,7 +25,7 @@ def get_latest_us_stock_price(symbol):
 
 def get_latest_us_stock_dividend(symbol):
     params = {
-        "function": "OVERVIEW",
+        "function": "DIVIDENDS",
         "symbol": symbol,
         "apikey": API_KEY
     }
@@ -34,13 +34,14 @@ def get_latest_us_stock_dividend(symbol):
         r = requests.get(BASE_URL, params=params, timeout=10)
         data = r.json()
 
-        dividend = Decimal(data["DividendPerShare"])
-        date = data["DividendDate"]
+        dividends = data["data"]
 
-        if not date or date == "None":
-            date = None
-        else:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
+        if not dividends:
+            return Decimal("0.00"), None
+
+        latest = max(dividends, key=lambda item: item["payment_date"])
+        dividend = Decimal(latest["amount"])
+        date = datetime.strptime(latest["payment_date"], "%Y-%m-%d").date()
         
         return dividend, date
 
