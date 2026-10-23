@@ -82,9 +82,17 @@ def update_stocks(conn, update_all, manual_updates=None):
 
     try:
         us_stocks = get_stocks(conn, "US")
+        changed_dividends = []
 
         for stock in us_stocks:
+            old_dividend = stock.dividend
             populate_stock_data(stock, price=None, dividend=None)
+
+            if old_dividend != stock.dividend:
+                changed_dividends.append(
+                    (stock.symbol, old_dividend, stock.dividend)
+                )
+
             stock_repo.save_stock(conn, stock)
 
         if update_all:
@@ -101,6 +109,8 @@ def update_stocks(conn, update_all, manual_updates=None):
                 stock_repo.save_stock(conn, stock)
 
         conn.commit()
+
+        return changed_dividends
 
     except Exception as e:
         conn.rollback()

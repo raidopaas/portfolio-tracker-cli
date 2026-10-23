@@ -12,7 +12,8 @@ def insights_menu_loop(conn):
     console.clear_screen()
     while True:
         print("1. View Statistics")
-        print("2. Add/Overwrite Goals")
+        print("2. View Deposit Statistics")
+        print("3. Add/Overwrite Goals")
         print("0. Main Menu")
         response = input("Select your option: ")
         match response:
@@ -20,6 +21,9 @@ def insights_menu_loop(conn):
                 console.clear_screen()
                 statistics_ui(conn)
             case "2":
+                console.clear_screen()
+                deposit_statistics_ui(conn)
+            case "3":
                 console.clear_screen()
                 add_goals_ui(conn)
             case "0":
@@ -69,6 +73,36 @@ def add_goals_ui(conn):
         print("Goals were added successfully!")
     except Exception as e:
         print(e)
+
+def deposit_statistics_ui(conn):
+    accounts = account_service.get_cash_accounts(conn)
+    
+    if not accounts:
+        print("No accounts available.")
+        return
+
+    start_date = transaction_service.get_first_transaction_date(conn)
+
+    if start_date is not None:
+        current = start_date.replace(day=1)
+        today = date.today()
+
+        while current <= today.replace(day=1):
+            year = current.year
+            month = current.month
+
+            totals = transaction_service.get_totals(conn, accounts, year, month)
+            total = totals["Grand Total"]
+
+            print(f"{year}-{month:02d}: {total}")
+
+            if month == 12:
+                current = date(year + 1, 1, 1)
+            else:
+                current = date(year, month + 1, 1)
+
+    input("Press Enter to continue...")
+    console.clear_screen()
 
 def statistics_ui(conn):
     

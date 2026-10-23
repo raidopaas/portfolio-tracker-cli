@@ -218,7 +218,7 @@ def update_stocks_ui(conn):
     update_all = True if manual_updates else False
 
     try:
-        stock_service.update_stocks(conn, update_all, manual_updates=manual_updates)
+        changed_dividends = stock_service.update_stocks(conn, update_all, manual_updates=manual_updates)
     except Exception as e:
         console.clear_screen()
         print(e)
@@ -226,6 +226,12 @@ def update_stocks_ui(conn):
 
     console.clear_screen()
     print("Stocks updated succesfully!")
+
+    if changed_dividends:
+        for stock_symbol, old, new in changed_dividends:
+            print(f"Stock {stock_symbol} dividend changed: {old} -> {new}")
+    else:
+        print("No dividend changes.")
     
 def view_transactions(conn):
     console.clear_screen()

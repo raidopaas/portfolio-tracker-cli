@@ -32,12 +32,5 @@ def get_totals(conn, accounts, year=None, month=None):
 
     return totals
 
-def get_account_monthly_change(conn, account_id, year, month):
-    transactions = get_transactions_for_account(conn, account_id, year, month)
-
-    change = Decimal("0.00")
-
-    for transaction in transactions:
-        change += transaction.amount
-
-    return change
+def get_first_transaction_date(conn):
+    return transaction_repo.get_first_transaction_date(conn)

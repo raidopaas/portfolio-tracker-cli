@@ -34,7 +34,9 @@ def get_latest_us_stock_dividend(symbol):
         r = requests.get(BASE_URL, params=params, timeout=10)
         data = r.json()
 
-        dividends = data["data"]
+        dividends = [
+                item for item in data["data"] if item.get("payment_date") and item["payment_date"] != "None"
+            ]
 
         if not dividends:
             return Decimal("0.00"), None

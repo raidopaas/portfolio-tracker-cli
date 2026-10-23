@@ -24,6 +24,14 @@ def delete_transactions_table(conn):
     finally:
         cursor.close()
 
+def get_first_transaction_date(conn):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT MIN(txn_date) FROM transactions")
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+
 def get_transactions_for_account(conn, account_id, year, month):
     cursor = conn.cursor()
 
